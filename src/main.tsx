@@ -14,8 +14,8 @@ async function bootstrap() {
   // Start MSW and seed DB
   const worker = setupWorker(...handlers);
   await worker.start({ onUnhandledRequest: "bypass" });
-  // await clearAllData();
-  await seedDatabase();
+  // await clearAllData(); // Clear database before seeding
+  await seedDatabase(); // Seeds both jobs and assessments
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
