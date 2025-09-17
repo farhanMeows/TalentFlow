@@ -1,10 +1,29 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.tsx";
+import { store } from "./store/store.ts";
+import { Provider } from "react-redux";
+import { seedDatabase } from "./mocks/seed";
+import { setupWorker } from "msw/browser";
+import { handlers } from "./mocks/handlers";
+import { BrowserRouter } from "react-router-dom";
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+async function bootstrap() {
+  // Start MSW and seed DB
+  const worker = setupWorker(...handlers);
+  await worker.start({ onUnhandledRequest: "bypass" });
+  await seedDatabase();
+
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <Provider store={store}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Provider>
+    </StrictMode>
+  );
+}
+
+bootstrap();
