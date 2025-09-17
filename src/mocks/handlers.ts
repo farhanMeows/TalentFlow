@@ -97,6 +97,26 @@ export const handlers = [
     return HttpResponse.json(updatedJob);
   }),
 
+  // 3b. Delete a Job and normalize order
+  http.delete("/jobs/:id", async ({ params }) => {
+    const { id } = params;
+    const numericId = Number(id);
+    const exists = await db.jobs.get(numericId);
+    if (!exists) {
+      return new HttpResponse("Job not found", { status: 404 });
+    }
+    await db.jobs.delete(numericId);
+    // Normalize order after deletion
+    const remaining = (await db.jobs.orderBy("order").toArray()).map(
+      (j, idx) => ({ ...j, order: idx })
+    );
+    if (remaining.length > 0) {
+      await db.jobs.bulkPut(remaining);
+    }
+    await delay(400);
+    return HttpResponse.json({ success: true });
+  }),
+
   // 4. Reorder Jobs [cite: 11, 32]
   http.patch("/jobs/:id/reorder", async ({ request, params }) => {
     // Simulate a failure 10% of the time to test rollback

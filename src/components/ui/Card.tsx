@@ -9,7 +9,7 @@ export function Card({
   return (
     <div
       className={clsx(
-        "rounded-lg border border-slate-200 bg-white p-4 shadow-sm",
+        "rounded-xl border p-4 shadow-[0_8px_24px_rgba(0,0,0,0.6)] bg-[#1e1e1e] border-[rgba(255,255,255,0.04)]",
         className
       )}
       {...rest}
@@ -24,7 +24,12 @@ export function CardHeader({
   className,
 }: PropsWithChildren<{ className?: string }>) {
   return (
-    <div className={clsx("mb-2 flex items-center justify-between", className)}>
+    <div
+      className={clsx(
+        "mb-3 flex items-center justify-between gap-3",
+        className
+      )}
+    >
       {children}
     </div>
   );
@@ -35,6 +40,8 @@ export function CardContent({
   className,
 }: PropsWithChildren<{ className?: string }>) {
   return (
-    <div className={clsx("text-sm text-slate-700", className)}>{children}</div>
+    <div className={clsx("text-sm text-[#e1e1e1] leading-relaxed", className)}>
+      {children}
+    </div>
   );
 }

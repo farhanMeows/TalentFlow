@@ -96,6 +96,18 @@ export const updateJob = createAsyncThunk(
   }
 );
 
+export const deleteJob = createAsyncThunk(
+  "jobs/deleteJob",
+  async (id: number, { rejectWithValue }) => {
+    const response = await fetch(`/jobs/${id}`, { method: "DELETE" });
+    if (!response.ok) {
+      const text = await response.text();
+      return rejectWithValue(text || "Failed to delete job");
+    }
+    return { id } as { id: number };
+  }
+);
+
 export const reorderJobs = createAsyncThunk(
   "jobs/reorderJobs",
   async (
@@ -189,6 +201,17 @@ const jobsSlice = createSlice({
       const idx = state.jobs.findIndex((j) => j.id === action.payload.id);
       if (idx !== -1) {
         state.jobs[idx] = action.payload;
+      }
+    });
+
+    builder.addCase(deleteJob.fulfilled, (state, action) => {
+      const idx = state.jobs.findIndex((j) => j.id === action.payload.id);
+      if (idx !== -1) {
+        state.jobs.splice(idx, 1);
+        state.pagination.totalCount = Math.max(
+          0,
+          state.pagination.totalCount - 1
+        );
       }
     });
 

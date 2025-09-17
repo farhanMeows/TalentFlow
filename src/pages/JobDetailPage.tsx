@@ -16,10 +16,12 @@ export default function JobDetailPage() {
       <div className="space-y-4">
         <Card>
           <CardContent>
-            <p className="text-slate-700">Job not found in current page.</p>
-            <Button as-child className="mt-3">
-              <Link to="/jobs">Back to Jobs</Link>
-            </Button>
+            <p className="text-[#e1e1e1]">Job not found in current page.</p>
+            <div className="mt-3">
+              <Button as-child variant="secondary" className="px-3 py-1.5">
+                <Link to="/jobs">Back to Jobs</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -30,25 +32,44 @@ export default function JobDetailPage() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-slate-900">{job.title}</h2>
+          <h2 className="text-xl font-semibold text-[#e1e1e1]">{job.title}</h2>
         </CardHeader>
+
         <CardContent>
-          <p className="text-sm text-slate-600">slug: {job.slug}</p>
-          <p className="text-sm text-slate-600">status: {job.status}</p>
+          <div className="flex flex-col gap-1 text-sm">
+            <p className="text-[#a0a0a0]">
+              slug: <span className="text-[#e1e1e1]">{job.slug}</span>
+            </p>
+
+            <p className="text-[#a0a0a0]">
+              status:{" "}
+              <span
+                className={
+                  job.status === "active"
+                    ? "inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold bg-green-500/20 text-green-400"
+                    : "inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold bg-[rgba(255,255,255,0.02)] text-[#a0a0a0]"
+                }
+              >
+                {job.status}
+              </span>
+            </p>
+          </div>
+
           {job.tags.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {job.tags.map((t) => (
                 <span
                   key={t}
-                  className="rounded bg-indigo-50 px-2 py-0.5 text-xs text-indigo-700"
+                  className="rounded px-2 py-0.5 text-xs font-semibold bg-[#bb85fb]/12 text-[#bb85fb]"
                 >
                   {t}
                 </span>
               ))}
             </div>
           )}
-          <div className="mt-4">
-            <Button as-child>
+
+          <div className="mt-6">
+            <Button as-child variant="primary" className="px-4 py-2">
               <Link to="/jobs">Back to Jobs</Link>
             </Button>
           </div>
