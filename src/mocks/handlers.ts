@@ -158,4 +158,47 @@ export const handlers = [
     await delay(500);
     return HttpResponse.json({ message: "Reorder successful" });
   }),
+
+  // Assessments
+  http.get("/assessments/:jobId", async ({ params }) => {
+    const jobId = Number(params.jobId);
+    const found = await db.assessments.where("jobId").equals(jobId).first();
+    await delay(300);
+    if (!found) {
+      return HttpResponse.json({ jobId, sections: [], updatedAt: new Date() });
+    }
+    return HttpResponse.json(found);
+  }),
+
+  http.put("/assessments/:jobId", async ({ params, request }) => {
+    const jobId = Number(params.jobId);
+    const payload = (await request.json()) as any;
+    const record = {
+      jobId,
+      sections: payload.sections || [],
+      updatedAt: new Date(),
+    };
+    const existing = await db.assessments.where("jobId").equals(jobId).first();
+    if (existing?.id) {
+      await db.assessments.update(existing.id, record);
+    } else {
+      await db.assessments.add(record);
+    }
+    await delay(300);
+    const saved = await db.assessments.where("jobId").equals(jobId).first();
+    return HttpResponse.json(saved);
+  }),
+
+  http.post("/assessments/:jobId/submit", async ({ params, request }) => {
+    const jobId = Number(params.jobId);
+    const answers = (await request.json()) as any;
+    const response = {
+      jobId,
+      answers,
+      createdAt: new Date(),
+    };
+    const id = await db.assessmentResponses.add(response);
+    await delay(300);
+    return HttpResponse.json({ id, ...response }, { status: 201 });
+  }),
 ];

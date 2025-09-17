@@ -8,11 +8,13 @@ import { seedDatabase } from "./mocks/seed";
 import { setupWorker } from "msw/browser";
 import { handlers } from "./mocks/handlers";
 import { BrowserRouter } from "react-router-dom";
+// import { clearAllData } from "./mocks/seed";
 
 async function bootstrap() {
   // Start MSW and seed DB
   const worker = setupWorker(...handlers);
   await worker.start({ onUnhandledRequest: "bypass" });
+  // await clearAllData();
   await seedDatabase();
 
   createRoot(document.getElementById("root")!).render(

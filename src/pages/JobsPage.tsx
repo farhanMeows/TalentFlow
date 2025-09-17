@@ -231,7 +231,7 @@ export default function JobsPage() {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="secondary"
                 className="border-[rgba(255,255,255,0.03)] bg-[#121212] text-[#e1e1e1] hover:bg-[#151515]"
@@ -246,6 +246,14 @@ export default function JobsPage() {
                 onClick={() => toggleArchive(job.id!, job.status)}
               >
                 {job.status === "active" ? "Archive" : "Unarchive"}
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="border-[rgba(255,255,255,0.03)] bg-[#121212] text-[#e1e1e1] hover:bg-[#151515]"
+                asChild
+              >
+                <Link to={`/jobs/${job.id}/assessment`}>Assessment</Link>
               </Button>
             </div>
           </Card>

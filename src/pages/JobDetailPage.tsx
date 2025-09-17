@@ -68,9 +68,13 @@ export default function JobDetailPage() {
             </div>
           )}
 
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap gap-3">
             <Button as-child variant="primary" className="px-4 py-2">
               <Link to="/jobs">Back to Jobs</Link>
+            </Button>
+
+            <Button as-child variant="secondary" className="px-4 py-2">
+              <Link to={`/jobs/${job.id}/assessment`}>Assessment Builder</Link>
             </Button>
           </div>
         </CardContent>

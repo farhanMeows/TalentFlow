@@ -5,16 +5,20 @@ type Variant = "primary" | "secondary" | "danger" | "ghost";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
+  asChild?: boolean;
+  size?: "sm" | "md" | "lg";
 }
 
 export default function Button({
   children,
   className,
   variant = "primary",
+  asChild = false,
+  size = "md",
   ...rest
 }: PropsWithChildren<ButtonProps>) {
   const base =
-    "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50";
+    "inline-flex items-center justify-center rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50";
 
   const variants: Record<Variant, string> = {
     primary:
@@ -27,8 +31,20 @@ export default function Button({
       "text-[#a0a0a0] hover:text-white hover:bg-[#121212] focus:ring-[#00dac5]/30",
   };
 
+  const sizes = {
+    sm: "px-2 py-1 text-xs",
+    md: "px-4 py-2 text-sm",
+    lg: "px-6 py-3 text-base",
+  };
+
+  const buttonClassName = clsx(base, variants[variant], sizes[size], className);
+
+  if (asChild) {
+    return <div className={buttonClassName}>{children}</div>;
+  }
+
   return (
-    <button className={clsx(base, variants[variant], className)} {...rest}>
+    <button className={buttonClassName} {...rest}>
       {children}
     </button>
   );
