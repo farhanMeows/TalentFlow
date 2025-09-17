@@ -12,14 +12,7 @@ interface PaginationState {
 interface JobsFiltersState {
   status: "active" | "archived" | "";
   search: string;
-  tags: string[]; // not used by API, kept for UI completeness
-  sort:
-    | "orderAsc"
-    | "orderDesc"
-    | "createdAtAsc"
-    | "createdAtDesc"
-    | "titleAsc"
-    | "titleDesc";
+  tags: string[];
 }
 
 interface JobsState {
@@ -33,7 +26,7 @@ interface JobsState {
 const initialState: JobsState = {
   jobs: [],
   pagination: { page: 1, pageSize: 10, totalCount: 0 },
-  filters: { status: "", search: "", tags: [], sort: "orderAsc" },
+  filters: { status: "", search: "", tags: [] },
   status: "idle",
   error: undefined,
 };
@@ -44,13 +37,13 @@ export const fetchJobs = createAsyncThunk(
     try {
       const state = getState() as { jobs: JobsState };
       const { page, pageSize } = state.jobs.pagination;
-      const { status, search, sort } = state.jobs.filters;
+      const { status, search, tags } = state.jobs.filters;
       const params = new URLSearchParams();
       params.set("page", String(page));
       params.set("pageSize", String(pageSize));
       if (status) params.set("status", status);
       if (search) params.set("search", search);
-      params.set("sort", sort);
+      if (tags.length > 0) params.set("tags", tags.join(","));
       const response = await fetch(`/jobs?${params.toString()}`);
       if (!response.ok) {
         return rejectWithValue("Failed to fetch jobs");
@@ -158,18 +151,8 @@ const jobsSlice = createSlice({
       state.filters.search = action.payload;
       state.pagination.page = 1;
     },
-    setSort: (
-      state,
-      action: PayloadAction<
-        | "orderAsc"
-        | "orderDesc"
-        | "createdAtAsc"
-        | "createdAtDesc"
-        | "titleAsc"
-        | "titleDesc"
-      >
-    ) => {
-      state.filters.sort = action.payload;
+    setTagsFilter: (state, action: PayloadAction<string[]>) => {
+      state.filters.tags = action.payload;
       state.pagination.page = 1;
     },
   },
@@ -225,6 +208,6 @@ export const {
   setPageSize,
   setStatusFilter,
   setSearchFilter,
-  setSort,
+  setTagsFilter,
 } = jobsSlice.actions;
 export default jobsSlice.reducer;

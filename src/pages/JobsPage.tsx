@@ -7,7 +7,7 @@ import {
   setPageSize,
   setSearchFilter,
   setStatusFilter,
-  setSort,
+  setTagsFilter,
   createJob,
   updateJob,
   optimisticallyReorderJobs,
@@ -15,6 +15,13 @@ import {
 } from "../store/features/jobs/jobsSlice";
 
 import { Link } from "react-router-dom";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Select from "../components/ui/Select";
+import { Card } from "../components/ui/Card";
+import Modal from "../components/ui/Modal";
+import TagGroupPicker from "../components/ui/TagPicker";
+import { PREDEFINED_TAGS } from "../constants/tags";
 
 export default function JobsPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -37,6 +44,8 @@ export default function JobsPage() {
     pagination.pageSize,
     filters.status,
     filters.search,
+    // refetch when tags change
+    filters.tags,
   ]);
 
   const totalPages = useMemo(() => {
@@ -121,96 +130,123 @@ export default function JobsPage() {
   }
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1>Jobs</h1>
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        <input
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-slate-900">Jobs</h1>
+        <Button onClick={openCreateModal}>New Job</Button>
+      </div>
+      <div className="mb-6 flex flex-col gap-3">
+        <Input
           value={filters.search}
           onChange={(e) => dispatch(setSearchFilter(e.target.value))}
           placeholder="Search title"
+          aria-label="Search title"
         />
-        <select
-          value={filters.status}
-          onChange={(e) => dispatch(setStatusFilter(e.target.value as any))}
-        >
-          <option value="">All</option>
-          <option value="active">Active</option>
-          <option value="archived">Archived</option>
-        </select>
-        <select
-          value={filters.sort}
-          onChange={(e) => dispatch(setSort(e.target.value as any))}
-        >
-          <option value="orderAsc">Order ↑</option>
-          <option value="orderDesc">Order ↓</option>
-          <option value="createdAtAsc">Created ↑</option>
-          <option value="createdAtDesc">Created ↓</option>
-          <option value="titleAsc">Title A→Z</option>
-          <option value="titleDesc">Title Z→A</option>
-        </select>
-        <button onClick={openCreateModal}>New Job</button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Select
+            value={filters.status}
+            onChange={(e) => dispatch(setStatusFilter(e.target.value as any))}
+            aria-label="Status filter"
+          >
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="archived">Archived</option>
+          </Select>
+          <div className="text-sm text-slate-600">Filter by tags:</div>
+          <TagGroupPicker
+            groups={PREDEFINED_TAGS}
+            selected={filters.tags}
+            onChange={(tags) => dispatch(setTagsFilter(tags))}
+            size="sm"
+          />
+        </div>
       </div>
 
       {status === "loading" && <p>Loading...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="grid gap-3">
         {jobs.map((job, idx) => (
-          <div
+          <Card
             key={job.id}
             draggable
-            onDragStart={(e) => onDragStart(e, idx)}
-            onDragOver={onDragOver}
-            onDrop={(e) => onDrop(e, idx)}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 8,
-              padding: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
-            }}
+            onDragStart={(e: React.DragEvent<HTMLDivElement>) =>
+              onDragStart(e, idx)
+            }
+            onDragOver={(e: React.DragEvent<HTMLDivElement>) => onDragOver(e)}
+            onDrop={(e: React.DragEvent<HTMLDivElement>) => onDrop(e, idx)}
+            className="flex items-center justify-between gap-3"
           >
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <Link to={`/jobs/${job.id}`}>{job.title}</Link>
-              <small>slug: {job.slug}</small>
-              <small>status: {job.status}</small>
-              {job.tags.length > 0 && (
-                <small>tags: {job.tags.join(", ")}</small>
-              )}
+            <div className="flex flex-col">
+              <Link
+                to={`/jobs/${job.id}`}
+                className="text-base font-semibold text-slate-900 hover:text-indigo-700"
+              >
+                {job.title}
+              </Link>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                <span className="rounded bg-slate-100 px-2 py-0.5">
+                  slug: {job.slug}
+                </span>
+                <span
+                  className={
+                    "rounded px-2 py-0.5 " +
+                    (job.status === "active"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-slate-200 text-slate-700")
+                  }
+                >
+                  {job.status}
+                </span>
+                {job.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded bg-indigo-50 px-2 py-0.5 text-indigo-700"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => openEditModal(job.id!)}>Edit</button>
-              <button onClick={() => toggleArchive(job.id!, job.status)}>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => openEditModal(job.id!)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => toggleArchive(job.id!, job.status)}
+              >
                 {job.status === "active" ? "Archive" : "Unarchive"}
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 
-      <div
-        style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}
-      >
-        <button
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <Button
+          variant="secondary"
           onClick={() => dispatch(setPage(Math.max(1, pagination.page - 1)))}
           disabled={pagination.page === 1}
         >
           Prev
-        </button>
-        <span>
+        </Button>
+        <span className="text-sm text-slate-600">
           Page {pagination.page} / {totalPages}
         </span>
-        <button
+        <Button
+          variant="secondary"
           onClick={() =>
             dispatch(setPage(Math.min(totalPages, pagination.page + 1)))
           }
           disabled={pagination.page >= totalPages}
         >
           Next
-        </button>
-        <select
+        </Button>
+        <Select
           value={pagination.pageSize}
           onChange={(e) => dispatch(setPageSize(Number(e.target.value)))}
         >
@@ -219,62 +255,44 @@ export default function JobsPage() {
               {n} / page
             </option>
           ))}
-        </select>
-        <span>total: {pagination.totalCount}</span>
+        </Select>
+        <span className="text-sm text-slate-600">
+          total: {pagination.totalCount}
+        </span>
       </div>
 
-      {modalOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.3)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onClick={() => setModalOpen(false)}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 8,
-              minWidth: 360,
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3>{editingJobId == null ? "Create Job" : "Edit Job"}</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <label>
-                Title
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </label>
-              <label>
-                Slug
-                <input value={slug} onChange={(e) => setSlug(e.target.value)} />
-              </label>
-              <label>
-                Tags (comma separated)
-                <input
-                  value={tagsInput}
-                  onChange={(e) => setTagsInput(e.target.value)}
-                />
-              </label>
-              {formError && <p style={{ color: "red" }}>{formError}</p>}
-              <div
-                style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}
-              >
-                <button onClick={() => setModalOpen(false)}>Cancel</button>
-                <button onClick={submitForm}>Save</button>
-              </div>
-            </div>
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editingJobId == null ? "Create Job" : "Edit Job"}
+      >
+        <div className="flex flex-col gap-3">
+          <label className="text-sm font-medium text-slate-700">
+            Title
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Slug
+            <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
+          </label>
+          <div className="text-sm font-medium text-slate-700">Tags</div>
+          <TagGroupPicker
+            groups={PREDEFINED_TAGS}
+            selected={tagsInput
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)}
+            onChange={(tags) => setTagsInput(tags.join(", "))}
+          />
+          {formError && <p className="text-sm text-red-600">{formError}</p>}
+          <div className="mt-2 flex justify-end gap-3">
+            <Button variant="secondary" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={submitForm}>Save</Button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

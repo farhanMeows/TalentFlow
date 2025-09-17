@@ -10,7 +10,11 @@ export const handlers = [
     const pageSize = parseInt(url.searchParams.get("pageSize") || "10");
     const status = url.searchParams.get("status");
     const search = url.searchParams.get("search");
-    const sort = url.searchParams.get("sort");
+    const tagsParam = url.searchParams.get("tags");
+    const filterTags = (tagsParam || "")
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
 
     // Base ordering
     let query = db.jobs.orderBy("order");
@@ -24,26 +28,11 @@ export const handlers = [
       );
     }
 
-    // Sorting options: orderAsc (default), orderDesc, createdAtAsc, createdAtDesc, titleAsc, titleDesc
-    if (sort === "orderDesc") {
-      query = query.reverse();
-    } else if (sort === "createdAtAsc" || sort === "createdAtDesc") {
-      // Dexie: need to re-query on different index
-      query = db.jobs.orderBy("createdAt");
-      if (status) query = query.filter((job) => job.status === status);
-      if (search)
-        query = query.filter((job) =>
-          job.title.toLowerCase().includes(search.toLowerCase())
-        );
-      if (sort === "createdAtDesc") query = query.reverse();
-    } else if (sort === "titleAsc" || sort === "titleDesc") {
-      query = db.jobs.orderBy("title");
-      if (status) query = query.filter((job) => job.status === status);
-      if (search)
-        query = query.filter((job) =>
-          job.title.toLowerCase().includes(search.toLowerCase())
-        );
-      if (sort === "titleDesc") query = query.reverse();
+    if (filterTags.length > 0) {
+      query = query.filter((job) => {
+        const jobTagsLower = job.tags.map((x) => x.toLowerCase());
+        return filterTags.every((t) => jobTagsLower.includes(t.toLowerCase()));
+      });
     }
 
     const totalCount = await query.count();
@@ -69,10 +58,23 @@ export const handlers = [
       return new HttpResponse("Title is required", { status: 400 });
     }
 
+    const allJobs = await db.jobs.orderBy("order").toArray();
+
+    // 2. Increment the order of every existing job by 1
+    const updatedJobs = allJobs.map((job) => ({
+      ...job,
+      order: job.order + 1,
+    }));
+
+    // 3. Save the updated jobs back to the database
+    if (updatedJobs.length > 0) {
+      await db.jobs.bulkPut(updatedJobs);
+    }
+
     const newJob = {
       ...newJobData,
       createdAt: new Date(),
-      order: await db.jobs.count(), // Add to the end
+      order: 0, // Add to the end
     };
 
     const id = await db.jobs.add(newJob);
