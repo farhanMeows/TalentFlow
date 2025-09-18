@@ -51,6 +51,11 @@ export const handlers = [
 
   // 2. Create a new Job [cite: 10, 30]
   http.post("/jobs", async ({ request }) => {
+    // 5–10% error rate
+    if (Math.random() < 0.08) {
+      await delay(400);
+      return new HttpResponse("Random failure creating job", { status: 500 });
+    }
     const newJobData = (await request.json()) as any;
 
     // Basic validation
@@ -78,12 +83,17 @@ export const handlers = [
     };
 
     const id = await db.jobs.add(newJob);
-    await delay(800);
+    // artificial latency
+    await delay(200 + Math.random() * 1000);
     return HttpResponse.json({ ...newJob, id }, { status: 201 });
   }),
 
   // 3. Update a Job (for editing or archiving) [cite: 11, 31]
   http.patch("/jobs/:id", async ({ request, params }) => {
+    if (Math.random() < 0.08) {
+      await delay(300);
+      return new HttpResponse("Random failure updating job", { status: 500 });
+    }
     const { id } = params;
     const updates = (await request.json()) as any;
     const updatedCount = await db.jobs.update(Number(id), updates);
@@ -92,13 +102,17 @@ export const handlers = [
       return new HttpResponse("Job not found", { status: 404 });
     }
 
-    await delay(600);
+    await delay(200 + Math.random() * 1000);
     const updatedJob = await db.jobs.get(Number(id));
     return HttpResponse.json(updatedJob);
   }),
 
   // 3b. Delete a Job and normalize order
   http.delete("/jobs/:id", async ({ params }) => {
+    if (Math.random() < 0.08) {
+      await delay(300);
+      return new HttpResponse("Random failure deleting job", { status: 500 });
+    }
     const { id } = params;
     const numericId = Number(id);
     const exists = await db.jobs.get(numericId);
@@ -113,7 +127,7 @@ export const handlers = [
     if (remaining.length > 0) {
       await db.jobs.bulkPut(remaining);
     }
-    await delay(400);
+    await delay(200 + Math.random() * 1000);
     return HttpResponse.json({ success: true });
   }),
 
@@ -121,7 +135,7 @@ export const handlers = [
   http.patch("/jobs/:id/reorder", async ({ request, params }) => {
     // Simulate a failure 10% of the time to test rollback
     if (Math.random() < 0.1) {
-      await delay(1200);
+      await delay(200 + Math.random() * 1000);
       return new HttpResponse("Server error: Could not reorder jobs", {
         status: 500,
       });
@@ -155,7 +169,7 @@ export const handlers = [
     }
     await db.jobs.bulkPut(allJobs);
 
-    await delay(500);
+    await delay(200 + Math.random() * 1000);
     return HttpResponse.json({ message: "Reorder successful" });
   }),
 
@@ -171,6 +185,12 @@ export const handlers = [
   }),
 
   http.put("/assessments/:jobId", async ({ params, request }) => {
+    if (Math.random() < 0.08) {
+      await delay(300);
+      return new HttpResponse("Random failure saving assessment", {
+        status: 500,
+      });
+    }
     const jobId = Number(params.jobId);
     const payload = (await request.json()) as any;
     const record = {
@@ -184,12 +204,18 @@ export const handlers = [
     } else {
       await db.assessments.add(record);
     }
-    await delay(300);
+    await delay(200 + Math.random() * 1000);
     const saved = await db.assessments.where("jobId").equals(jobId).first();
     return HttpResponse.json(saved);
   }),
 
   http.post("/assessments/:jobId/submit", async ({ params, request }) => {
+    if (Math.random() < 0.08) {
+      await delay(300);
+      return new HttpResponse("Random failure submitting assessment", {
+        status: 500,
+      });
+    }
     const jobId = Number(params.jobId);
     const answers = (await request.json()) as any;
     const response = {
@@ -198,7 +224,7 @@ export const handlers = [
       createdAt: new Date(),
     };
     const id = await db.assessmentResponses.add(response);
-    await delay(300);
+    await delay(200 + Math.random() * 1000);
     return HttpResponse.json({ id, ...response }, { status: 201 });
   }),
 
@@ -244,6 +270,12 @@ export const handlers = [
 
   // POST /candidates
   http.post("/candidates", async ({ request }) => {
+    if (Math.random() < 0.08) {
+      await delay(300);
+      return new HttpResponse("Random failure creating candidate", {
+        status: 500,
+      });
+    }
     const payload = (await request.json()) as any;
     if (!payload?.name || !payload?.email) {
       return new HttpResponse("name and email are required", { status: 400 });
@@ -262,7 +294,7 @@ export const handlers = [
       type: "created",
       payload: {},
     });
-    await delay(400);
+    await delay(200 + Math.random() * 1000);
     return HttpResponse.json({ id, ...newCandidate }, { status: 201 });
   }),
 
@@ -270,7 +302,7 @@ export const handlers = [
   http.patch("/candidates/:id", async ({ params, request }) => {
     // simulate occasional failure to test optimistic rollback
     if (Math.random() < 0.1) {
-      await delay(300);
+      await delay(200 + Math.random() * 1000);
       return new HttpResponse("Random failure", { status: 500 });
     }
     const { id } = params;
@@ -290,7 +322,7 @@ export const handlers = [
       });
     }
     const updated = await db.candidates.get(numericId);
-    await delay(300);
+    await delay(200 + Math.random() * 1000);
     return HttpResponse.json(updated);
   }),
 
@@ -312,6 +344,10 @@ export const handlers = [
 
   // POST /candidates/:id/timeline (add note)
   http.post("/candidates/:id/timeline", async ({ params, request }) => {
+    if (Math.random() < 0.08) {
+      await delay(200 + Math.random() * 1000);
+      return new HttpResponse("Random failure adding note", { status: 500 });
+    }
     const { id } = params;
     const numericId = Number(id);
     const exists = await db.candidates.get(numericId);
@@ -326,7 +362,7 @@ export const handlers = [
       payload: { text: payload?.text || "" },
     };
     const entryId = await db.candidateTimelines.add(entry);
-    await delay(200);
+    await delay(200 + Math.random() * 1000);
     return HttpResponse.json({ id: entryId, ...entry }, { status: 201 });
   }),
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -19,7 +19,27 @@ export default function CandidateProfilePage() {
   const events = useSelector(
     (s: any) => s.candidates.timelineById[id] ?? EMPTY_EVENTS
   );
+  // Hardcoded interviewers for @mentions
+  const INTERVIEWERS: string[] = [
+    "Abhishek",
+    "Farhan",
+    "Rituraj",
+    "Sweta",
+    "Pandey",
+  ];
   const [note, setNote] = useState("");
+  const [mentionQuery, setMentionQuery] = useState<string>("");
+  const [showMentions, setShowMentions] = useState<boolean>(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const mentionSuggestions = ((): string[] => {
+    if (!mentionQuery) return INTERVIEWERS.slice(0, 5);
+    const q = mentionQuery.toLowerCase();
+    return INTERVIEWERS.filter((name) => name.toLowerCase().includes(q)).slice(
+      0,
+      5
+    );
+  })();
 
   useEffect(() => {
     if (!candidate) {
@@ -33,6 +53,46 @@ export default function CandidateProfilePage() {
     await dispatch(addTimelineNote({ candidateId: id, text: note.trim() }));
     setNote("");
   };
+
+  function handleTextChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const value = e.target.value;
+    setNote(value);
+    // find the token starting with '@' before cursor
+    const cursor = e.target.selectionStart || value.length;
+    const uptoCursor = value.slice(0, cursor);
+    const match = uptoCursor.match(/(^|\s)@([\w\- ]*)$/);
+    if (match) {
+      const query = match[2] || "";
+      setMentionQuery(query);
+      setShowMentions(true);
+    } else {
+      setMentionQuery("");
+      setShowMentions(false);
+    }
+  }
+
+  function insertMention(name: string) {
+    const el = textareaRef.current;
+    if (!el) return;
+    const value = note;
+    const cursor = el.selectionStart || value.length;
+    const uptoCursor = value.slice(0, cursor);
+    const afterCursor = value.slice(cursor);
+    const match = uptoCursor.match(/(^|\s)@([\w\- ]*)$/);
+    if (!match) return;
+    const start = (match.index ?? uptoCursor.length - 1) + match[1].length; // position after leading space/boundary
+    const newBefore = uptoCursor.slice(0, start) + "@" + name + " ";
+    const next = newBefore + afterCursor;
+    setNote(next);
+    setShowMentions(false);
+    setMentionQuery("");
+    // restore caret after inserted mention
+    const newPos = newBefore.length;
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(newPos, newPos);
+    });
+  }
 
   if (!candidate) return <div className="p-6 text-white">Loading...</div>;
 
@@ -78,12 +138,31 @@ export default function CandidateProfilePage() {
         </div>
         <div>
           <h2 className="text-xl mb-3">Notes</h2>
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Add a note... Use @mention text only for now."
-            className="w-full h-32 p-3 rounded bg-[#1e1e1e] text-white border border-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-[#bb85fb]"
-          />
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              value={note}
+              onChange={handleTextChange}
+              onBlur={() => setTimeout(() => setShowMentions(false), 200)}
+              placeholder="Add a note... Use @mention text only for now."
+              className="w-full h-32 p-3 rounded bg-[#1e1e1e] text-white border border-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-[#bb85fb]"
+            />
+            {showMentions && mentionSuggestions.length > 0 && (
+              <div className="absolute left-3 right-3 top-3 z-10 mt-10 rounded border border-[#2a2a2a] bg-[#121212] shadow-lg">
+                {mentionSuggestions.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => insertMention(name)}
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#1e1e1e]"
+                  >
+                    @{name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             onClick={submitNote}
             className="mt-2 px-3 py-2 rounded bg-[#00dac5] text-black"
