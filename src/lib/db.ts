@@ -59,10 +59,37 @@ export interface AssessmentResponse {
   createdAt: Date;
 }
 
+export type CandidateStage =
+  | "applied"
+  | "screen"
+  | "tech"
+  | "offer"
+  | "hired"
+  | "rejected";
+
+export interface Candidate {
+  id?: number;
+  name: string;
+  email: string;
+  jobId?: number; // optional: candidate may be unassigned
+  stage: CandidateStage;
+  createdAt: Date;
+}
+
+export interface CandidateTimelineEntry {
+  id?: number;
+  candidateId: number;
+  timestamp: Date;
+  type: "created" | "stage_change" | "note";
+  payload: Record<string, unknown>;
+}
+
 export class MySubClassedDexie extends Dexie {
   jobs!: Table<Job>;
   assessments!: Table<Assessment>;
   assessmentResponses!: Table<AssessmentResponse>;
+  candidates!: Table<Candidate>;
+  candidateTimelines!: Table<CandidateTimelineEntry>;
 
   constructor() {
     super("talentFlowDB");
@@ -76,6 +103,28 @@ export class MySubClassedDexie extends Dexie {
         // if coming from v1, just ensure tables exist; nothing to migrate for now
         await tx.table("assessments");
         await tx.table("assessmentResponses");
+      });
+
+    this.version(3)
+      .stores({
+        candidates: "++id, email, name, stage, createdAt",
+        candidateTimelines: "++id, candidateId, timestamp, type",
+      })
+      .upgrade(async (tx) => {
+        await tx.table("candidates");
+        await tx.table("candidateTimelines");
+      });
+
+    // v4: add jobId index to candidates
+    this.version(4)
+      .stores({
+        candidates: "++id, email, name, stage, createdAt, jobId",
+        candidateTimelines: "++id, candidateId, timestamp, type",
+      })
+      .upgrade(async (tx) => {
+        // nothing to migrate besides new index; ensure tables exist
+        await tx.table("candidates");
+        await tx.table("candidateTimelines");
       });
   }
 }

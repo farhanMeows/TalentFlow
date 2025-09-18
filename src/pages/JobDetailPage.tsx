@@ -1,15 +1,47 @@
 import { useParams, Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import {
+  fetchCandidates,
+  setJobFilter,
+  setSearch as setCandidateSearch,
+  setPage as setCandidatePage,
+  setPageSize as setCandidatePageSize,
+} from "../store/features/candidates/candidatesSlice";
 import type { RootState } from "../store/store";
 import { Card, CardContent, CardHeader } from "../components/ui/Card";
 import Button from "../components/ui/Button";
+// Import a Loader component (example provided below)
+import Loader from "../components/ui/Loader";
 
 export default function JobDetailPage() {
   const { jobId } = useParams();
   const idNum = Number(jobId);
+  const dispatch = useDispatch<any>();
+
   const job = useSelector((s: RootState) =>
     s.jobs.jobs.find((j) => j.id === idNum)
   );
+
+  // 1. Get the loading status from the candidates slice
+  const isLoadingCandidates = useSelector(
+    (s: RootState) => s.candidates.loading
+  );
+
+  const applicants = useSelector(
+    (s: RootState) => s.candidates.items.filter((c) => c.jobId === idNum),
+    shallowEqual
+  );
+
+  // Ensure candidates for this job are loaded
+  useEffect(() => {
+    if (!Number.isFinite(idNum)) return;
+    dispatch(setJobFilter(idNum));
+    dispatch(setCandidateSearch(""));
+    dispatch(setCandidatePage(1));
+    dispatch(setCandidatePageSize(1000));
+    dispatch(fetchCandidates());
+  }, [idNum]);
 
   if (!job) {
     return (
@@ -30,6 +62,7 @@ export default function JobDetailPage() {
 
   return (
     <div className="space-y-4">
+      {/* Job Details Card - No Changes Here */}
       <Card>
         <CardHeader>
           <h2 className="text-xl font-semibold text-[#e1e1e1]">{job.title}</h2>
@@ -77,6 +110,57 @@ export default function JobDetailPage() {
               <Link to={`/jobs/${job.id}/assessment`}>Assessment Builder</Link>
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Applicants section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-[#e1e1e1]">
+              Applicants {/* 2. Hide count during loading */}
+              {!isLoadingCandidates && `(${applicants.length})`}
+            </h3>
+            <Button as-child variant="secondary" className="px-3 py-1.5">
+              <Link to={`/jobs/${job.id}/candidates`}>View all</Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* 3. Add conditional rendering for the loader */}
+          {isLoadingCandidates ? (
+            <Loader />
+          ) : applicants.length === 0 ? (
+            <p className="text-sm text-[#a0a0a0]">No applicants yet.</p>
+          ) : (
+            <ul className="divide-y divide-[#2a2a2a]">
+              {applicants.map((c) => (
+                <li
+                  key={c.id}
+                  className="py-3 flex items-center justify-between"
+                >
+                  <div>
+                    <div className="text-sm text-white font-medium">
+                      {c.name}
+                    </div>
+                    <div className="text-xs text-[#e1e1e1]">{c.email}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="px-2 py-1 rounded bg-[#1e1e1e] border border-[#2a2a2a] text-[#bb85fb] text-xs">
+                      {c.stage}
+                    </span>
+                    <Button
+                      as-child
+                      variant="ghost"
+                      className="px-2 py-1 text-xs"
+                    >
+                      <Link to={`/candidates/${c.id}`}>Profile</Link>
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </div>

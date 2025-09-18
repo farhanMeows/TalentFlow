@@ -1,5 +1,5 @@
 import { db } from "../lib/db";
-import type { Job, Assessment } from "../lib/db";
+import type { Job, Assessment, Candidate } from "../lib/db";
 import { PREDEFINED_TAGS } from "../constants/tags";
 
 const JOB_TITLES = [
@@ -38,8 +38,9 @@ const JOB_TITLES = [
 export async function seedDatabase() {
   const jobCount = await db.jobs.count();
   const assessmentCount = await db.assessments.count();
+  const candidateCount = await db.candidates.count().catch(() => 0);
 
-  if (jobCount > 0 && assessmentCount > 0) {
+  if (jobCount > 0 && assessmentCount > 0 && candidateCount > 0) {
     console.log("database already seeded.");
     return;
   }
@@ -625,6 +626,111 @@ export async function seedDatabase() {
   if (assessmentCount === 0) {
     await db.assessments.bulkAdd(assessments);
     console.log("Assessments seeded successfully!");
+  }
+
+  // Seed candidates if not present
+  if (candidateCount === 0) {
+    const allJobs = await db.jobs.orderBy("id").toArray();
+    const jobIds = allJobs.map((j) => j.id!).filter(Boolean);
+    const stages = [
+      "applied",
+      "screen",
+      "tech",
+      "offer",
+      "hired",
+      "rejected",
+    ] as const;
+
+    function randomName() {
+      const first = [
+        "Alex",
+        "Sam",
+        "Priya",
+        "Diego",
+        "Mina",
+        "Jordan",
+        "Taylor",
+        "Chris",
+        "Jamie",
+        "Avery",
+        "Riley",
+        "Parker",
+        "Casey",
+        "Morgan",
+        "Reese",
+        "Skyler",
+        "Aria",
+        "Leo",
+        "Noah",
+        "Mia",
+        "Liam",
+        "Ethan",
+        "Zoe",
+        "Nina",
+        "Uma",
+        "Ivy",
+        "Owen",
+        "Elena",
+        "Kai",
+        "Luca",
+      ];
+      const last = [
+        "Johnson",
+        "Lee",
+        "Patel",
+        "Martinez",
+        "Chen",
+        "Smith",
+        "Garcia",
+        "Brown",
+        "Davis",
+        "Miller",
+        "Wilson",
+        "Moore",
+        "Taylor",
+        "Anderson",
+        "Thomas",
+        "Jackson",
+        "White",
+        "Harris",
+        "Martin",
+        "Thompson",
+      ];
+      const f = first[Math.floor(Math.random() * first.length)];
+      const l = last[Math.floor(Math.random() * last.length)];
+      return `${f} ${l}`;
+    }
+    function emailFromName(name: string, idx: number) {
+      const base = name.toLowerCase().replace(/[^a-z]+/g, ".");
+      return `${base}.${idx}@example.com`;
+    }
+
+    const batch: Candidate[] = [];
+    const now = Date.now();
+    for (let i = 0; i < 1000; i++) {
+      const name = randomName();
+      const jobId =
+        jobIds.length > 0
+          ? jobIds[Math.floor(Math.random() * jobIds.length)]
+          : undefined;
+      const stage = stages[Math.floor(Math.random() * stages.length)];
+      batch.push({
+        name,
+        email: emailFromName(name, i),
+        jobId,
+        stage,
+        createdAt: new Date(now - Math.floor(Math.random() * 30) * 86400000),
+      });
+    }
+    const ids = await db.candidates.bulkAdd(batch, { allKeys: true } as any);
+    const timelineAdds = (ids as number[]).map((id, idx) => ({
+      candidateId: id,
+      timestamp: new Date(now - (idx % 30) * 86400000),
+      type: "created",
+      payload: {},
+    }));
+    await db.candidateTimelines.bulkAdd(timelineAdds as any);
+    console.log("1000 candidates seeded successfully!");
   }
 
   console.log("Database seeding completed!");
@@ -1215,6 +1321,8 @@ export async function clearAllData() {
     await db.jobs.clear();
     await db.assessments.clear();
     await db.assessmentResponses.clear();
+    await db.candidates.clear();
+    await db.candidateTimelines.clear();
 
     console.log("All data cleared successfully!");
   } catch (error) {

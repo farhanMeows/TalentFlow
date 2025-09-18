@@ -28,6 +28,19 @@ export default function Navbar() {
             >
               Jobs
             </NavLink>
+            <NavLink
+              to="/candidates"
+              className={({ isActive }) =>
+                [
+                  "rounded-md px-3 py-1.5 transition-colors duration-200",
+                  isActive
+                    ? "bg-[#00dac5]/20 text-[#00dac5] font-semibold"
+                    : "text-[#a0a0a0] hover:text-white hover:bg-[#121212]",
+                ].join(" ")
+              }
+            >
+              Candidates
+            </NavLink>
           </nav>
         </div>
       </div>

@@ -1,6 +1,6 @@
 // src/mocks/handlers.ts
 import { http, HttpResponse, delay } from "msw";
-import { db } from "../lib/db";
+import { db, type CandidateStage } from "../lib/db";
 
 export const handlers = [
   // 1. Get Jobs with Pagination & Filtering [cite: 9, 29]
@@ -200,5 +200,143 @@ export const handlers = [
     const id = await db.assessmentResponses.add(response);
     await delay(300);
     return HttpResponse.json({ id, ...response }, { status: 201 });
+  }),
+
+  // Candidates APIs
+  // GET /candidates?search=&stage=&page=
+  http.get("/candidates", async ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get("page") || "1");
+    const pageSize = parseInt(url.searchParams.get("pageSize") || "10");
+    const search = url.searchParams.get("search")?.toLowerCase() || "";
+    const stage = url.searchParams.get("stage") as CandidateStage | null;
+    const jobIdParam = url.searchParams.get("jobId");
+    const jobId = jobIdParam ? Number(jobIdParam) : null;
+
+    let query = db.candidates.orderBy("createdAt").reverse();
+
+    if (search) {
+      query = query.filter(
+        (c) =>
+          c.name.toLowerCase().includes(search) ||
+          c.email.toLowerCase().includes(search)
+      );
+    }
+    if (stage) {
+      query = query.filter((c) => c.stage === stage);
+    }
+    if (jobId !== null && Number.isFinite(jobId)) {
+      query = query.filter((c) => c.jobId === jobId);
+    }
+
+    const totalCount = await query.count();
+    const results = await query
+      .offset((page - 1) * pageSize)
+      .limit(pageSize)
+      .toArray();
+
+    await delay(300);
+    return HttpResponse.json({
+      data: results,
+      pagination: { page, pageSize, totalCount },
+    });
+  }),
+
+  // POST /candidates
+  http.post("/candidates", async ({ request }) => {
+    const payload = (await request.json()) as any;
+    if (!payload?.name || !payload?.email) {
+      return new HttpResponse("name and email are required", { status: 400 });
+    }
+    const newCandidate = {
+      name: payload.name,
+      email: payload.email,
+      stage: (payload.stage as CandidateStage) || "applied",
+      createdAt: new Date(),
+    };
+    const id = await db.candidates.add(newCandidate);
+    // timeline: created
+    await db.candidateTimelines.add({
+      candidateId: id,
+      timestamp: new Date(),
+      type: "created",
+      payload: {},
+    });
+    await delay(400);
+    return HttpResponse.json({ id, ...newCandidate }, { status: 201 });
+  }),
+
+  // PATCH /candidates/:id (stage transitions or partial updates)
+  http.patch("/candidates/:id", async ({ params, request }) => {
+    // simulate occasional failure to test optimistic rollback
+    if (Math.random() < 0.1) {
+      await delay(300);
+      return new HttpResponse("Random failure", { status: 500 });
+    }
+    const { id } = params;
+    const numericId = Number(id);
+    const updates = (await request.json()) as any;
+    const exists = await db.candidates.get(numericId);
+    if (!exists) {
+      return new HttpResponse("Candidate not found", { status: 404 });
+    }
+    await db.candidates.update(numericId, updates);
+    if (updates.stage && updates.stage !== exists.stage) {
+      await db.candidateTimelines.add({
+        candidateId: numericId,
+        timestamp: new Date(),
+        type: "stage_change",
+        payload: { from: exists.stage, to: updates.stage },
+      });
+    }
+    const updated = await db.candidates.get(numericId);
+    await delay(300);
+    return HttpResponse.json(updated);
+  }),
+
+  // GET /candidates/:id/timeline
+  http.get("/candidates/:id/timeline", async ({ params }) => {
+    const { id } = params;
+    const numericId = Number(id);
+    const exists = await db.candidates.get(numericId);
+    if (!exists) {
+      return new HttpResponse("Candidate not found", { status: 404 });
+    }
+    const events = await db.candidateTimelines
+      .where("candidateId")
+      .equals(numericId)
+      .sortBy("timestamp");
+    await delay(200);
+    return HttpResponse.json({ candidateId: numericId, events });
+  }),
+
+  // POST /candidates/:id/timeline (add note)
+  http.post("/candidates/:id/timeline", async ({ params, request }) => {
+    const { id } = params;
+    const numericId = Number(id);
+    const exists = await db.candidates.get(numericId);
+    if (!exists) {
+      return new HttpResponse("Candidate not found", { status: 404 });
+    }
+    const payload = (await request.json()) as any;
+    const entry = {
+      candidateId: numericId,
+      timestamp: new Date(),
+      type: "note" as const,
+      payload: { text: payload?.text || "" },
+    };
+    const entryId = await db.candidateTimelines.add(entry);
+    await delay(200);
+    return HttpResponse.json({ id: entryId, ...entry }, { status: 201 });
+  }),
+
+  // GET /candidates/:id
+  http.get("/candidates/:id", async ({ params }) => {
+    const { id } = params;
+    const numericId = Number(id);
+    const found = await db.candidates.get(numericId);
+    await delay(200);
+    if (!found) return new HttpResponse("Not found", { status: 404 });
+    return HttpResponse.json(found);
   }),
 ];
