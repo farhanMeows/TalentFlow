@@ -27,12 +27,6 @@ npm run dev
 
 App boots MSW, seeds IndexedDB, and opens at `http://localhost:5173/`.
 
-3. Build
-
-```
-npm run build && npm run preview
-```
-
 ## Project Structure (high-level)
 
 - `src/pages/LandingPage.tsx` – marketing/intro page (no navbar, full-width)
@@ -103,7 +97,7 @@ npm run build && npm run preview
 - Assessments: 3 comprehensive examples (10+ questions each) with conditional logic
 - Candidates: 1000 generated candidates mapped across jobs; initial timeline entry
 
-To clear data (optional utility): see `clearAllData()` in `src/mocks/seed.ts` (commented by default).
+To clear data (optional utility): see `clearAllData()` in `src/main.tsx` (commented by default).
 
 ## Routing
 
