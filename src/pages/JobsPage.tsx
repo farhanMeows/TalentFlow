@@ -132,7 +132,6 @@ export default function JobsPage() {
 
   return (
     <div className="space-y-6 text-[#e1e1e1]">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-white">Jobs</h1>
         <Button
@@ -143,7 +142,6 @@ export default function JobsPage() {
         </Button>
       </div>
 
-      {/* Filters */}
       <div className="mb-6 flex flex-col gap-3 rounded-lg bg-[#1e1e1e] p-4 shadow-sm border border-[rgba(255,255,255,0.02)]">
         <Input
           value={filters.search}
@@ -177,13 +175,11 @@ export default function JobsPage() {
         </div>
       </div>
 
-      {/* Loading / Error */}
       {status === "loading" && (
         <p className="text-sm text-[#a0a0a0]">Loading...</p>
       )}
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
-      {/* Jobs list */}
       <div className="grid gap-3">
         {jobs.map((job, idx) => (
           <Card

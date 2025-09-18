@@ -10,9 +10,6 @@ import {
   type CandidateStage,
 } from "../store/features/candidates/candidatesSlice";
 
-// simple RootState typing without central types file
-// no RootState types available; use any for store selector here
-
 export default function CandidatesPage() {
   const dispatch = useDispatch<any>();
   const { items, loading, pagination, filters, selectedIds } = useSelector(
@@ -22,7 +19,6 @@ export default function CandidatesPage() {
   const jobs = useSelector((s: any) => s.jobs.jobs, shallowEqual);
   const [localSearch, setLocalSearch] = useState(filters.search);
 
-  // debounce search
   useEffect(() => {
     const t = setTimeout(() => {
       if (localSearch !== filters.search) dispatch(setSearch(localSearch));

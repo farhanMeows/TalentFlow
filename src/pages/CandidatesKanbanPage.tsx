@@ -42,7 +42,6 @@ export default function CandidatesKanbanPage() {
     dispatch(fetchCandidates());
   }, [filters.search]);
 
-  // ignore jobId param for filtering as requested
   useEffect(() => {
     if (!jobId) {
       // Clear any stale job filter when coming from other pages
@@ -79,15 +78,11 @@ export default function CandidatesKanbanPage() {
   const onDrop = async (e: React.DragEvent, stage: CandidateStage) => {
     const id = Number(e.dataTransfer.getData("text/plain"));
     if (!Number.isFinite(id)) return;
-    // optimistic update
-    // backup current
     const current = items.find((x: any) => x.id === id);
     if (!current || current.stage === stage) return;
-    // local optimistic mutation via direct dispatch to update reducer
     await dispatch(updateCandidate({ id, updates: { stage } }))
       .unwrap()
       .catch(async () => {
-        // rollback: update back to previous stage
         await dispatch(
           updateCandidate({ id, updates: { stage: current.stage } })
         );
@@ -112,7 +107,6 @@ export default function CandidatesKanbanPage() {
           })()}
         </h1>
         <div className="flex items-center gap-2">
-          {/* Job filter removed as per request */}
           <input
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}

@@ -11,7 +11,7 @@ import {
 import type { RootState } from "../store/store";
 import { Card, CardContent, CardHeader } from "../components/ui/Card";
 import Button from "../components/ui/Button";
-// Import a Loader component (example provided below)
+
 import Loader from "../components/ui/Loader";
 
 export default function JobDetailPage() {
@@ -23,7 +23,6 @@ export default function JobDetailPage() {
     s.jobs.jobs.find((j) => j.id === idNum)
   );
 
-  // 1. Get the loading status from the candidates slice
   const isLoadingCandidates = useSelector(
     (s: RootState) => s.candidates.loading
   );
@@ -33,7 +32,6 @@ export default function JobDetailPage() {
     shallowEqual
   );
 
-  // Ensure candidates for this job are loaded
   useEffect(() => {
     if (!Number.isFinite(idNum)) return;
     dispatch(setJobFilter(idNum));
@@ -62,7 +60,6 @@ export default function JobDetailPage() {
 
   return (
     <div className="space-y-4">
-      {/* Job Details Card - No Changes Here */}
       <Card>
         <CardHeader>
           <h2 className="text-xl font-semibold text-[#e1e1e1]">{job.title}</h2>
@@ -113,7 +110,6 @@ export default function JobDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Applicants section */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -127,7 +123,6 @@ export default function JobDetailPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* 3. Add conditional rendering for the loader */}
           {isLoadingCandidates ? (
             <Loader />
           ) : applicants.length === 0 ? (
