@@ -21,7 +21,7 @@ import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import { Card } from "../components/ui/Card";
 import Modal from "../components/ui/Modal";
-import TagGroupPicker from "../components/ui/TagPicker";
+import TagGroupPicker from "../components/TagPicker";
 import { PREDEFINED_TAGS } from "../constants/tags";
 
 export default function JobsPage() {
