@@ -2,11 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import type {
-  AssessmentSection,
-  AssessmentQuestion,
-  QuestionType,
-} from "../../lib/db"; // adjust to your actual types path
+import type { AssessmentSection, AssessmentQuestion } from "../../lib/db"; // adjust to your actual types path
 
 type Props = {
   sections: AssessmentSection[];
@@ -57,6 +53,8 @@ export default function PreviewFull({
                   {s.questions.map((q) => {
                     const isVisible = isQuestionVisible(q);
                     if (!isVisible) return null;
+                    const value = previewAnswers[q.id] ?? "";
+                    const maxLength = q.maxLength ?? undefined;
 
                     return (
                       <div key={q.id} className="space-y-2">
@@ -68,31 +66,59 @@ export default function PreviewFull({
                         </label>
 
                         {q.type === "short_text" && (
-                          <Input
-                            placeholder="Enter your answer..."
-                            className="max-w-md"
-                            value={previewAnswers[q.id] || ""}
-                            onChange={(e) =>
-                              setPreviewAnswers({
-                                ...previewAnswers,
-                                [q.id]: e.target.value,
-                              })
-                            }
-                          />
+                          <div>
+                            <Input
+                              placeholder="Enter your answer..."
+                              className="max-w-md"
+                              value={previewAnswers[q.id] || ""}
+                              maxLength={q.maxLength ?? undefined}
+                              onChange={(e) =>
+                                setPreviewAnswers({
+                                  ...previewAnswers,
+                                  [q.id]: e.target.value,
+                                })
+                              }
+                            />
+                            <div className="flex justify-end text-xs text-muted-foreground mt-1">
+                              {typeof maxLength === "number" ? (
+                                <span>{`${
+                                  maxLength - (value as string).length
+                                } / ${maxLength} chars left`}</span>
+                              ) : (
+                                <span>{`${
+                                  (value as string).length
+                                } chars`}</span>
+                              )}
+                            </div>
+                          </div>
                         )}
 
                         {q.type === "long_text" && (
-                          <textarea
-                            className="min-h-[100px] w-full rounded-md border border-border bg-card p-3 text-sm text-foreground"
-                            placeholder="Enter your answer..."
-                            value={previewAnswers[q.id] || ""}
-                            onChange={(e) =>
-                              setPreviewAnswers({
-                                ...previewAnswers,
-                                [q.id]: e.target.value,
-                              })
-                            }
-                          />
+                          <div>
+                            <textarea
+                              className="min-h-[100px] w-full rounded-md border border-border bg-card p-3 text-sm text-foreground"
+                              placeholder="Enter your answer..."
+                              value={previewAnswers[q.id] || ""}
+                              maxLength={q.maxLength ?? undefined}
+                              onChange={(e) =>
+                                setPreviewAnswers({
+                                  ...previewAnswers,
+                                  [q.id]: e.target.value,
+                                })
+                              }
+                            />
+                            <div className="flex justify-end text-xs text-muted-foreground mt-1">
+                              {typeof maxLength === "number" ? (
+                                <span>{`${
+                                  maxLength - (value as string).length
+                                } / ${maxLength} chars left`}</span>
+                              ) : (
+                                <span>{`${
+                                  (value as string).length
+                                } chars`}</span>
+                              )}
+                            </div>
+                          </div>
                         )}
 
                         {q.type === "numeric" && (
@@ -101,6 +127,8 @@ export default function PreviewFull({
                             placeholder="Enter a number..."
                             className="max-w-md"
                             value={previewAnswers[q.id] || ""}
+                            min={q.min ?? undefined}
+                            max={q.max ?? undefined}
                             onChange={(e) =>
                               setPreviewAnswers({
                                 ...previewAnswers,

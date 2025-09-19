@@ -32,6 +32,8 @@ export default function PreviewPane({
             <div className="space-y-3">
               {s.questions.map((q) => {
                 if (!isQuestionVisible(q)) return null;
+                const value = previewAnswers[q.id] ?? "";
+                const maxLength = q.maxLength ?? undefined;
 
                 return (
                   <div key={q.id} className="space-y-1">
@@ -41,34 +43,60 @@ export default function PreviewPane({
                     </label>
 
                     {q.type === "short_text" && (
-                      <Input
-                        value={previewAnswers[q.id] || ""}
-                        onChange={(e) =>
-                          setPreviewAnswers({
-                            ...previewAnswers,
-                            [q.id]: e.target.value,
-                          })
-                        }
-                      />
+                      <div>
+                        <Input
+                          value={previewAnswers[q.id] || ""}
+                          maxLength={q.maxLength ?? undefined}
+                          onChange={(e) =>
+                            setPreviewAnswers({
+                              ...previewAnswers,
+                              [q.id]: e.target.value,
+                            })
+                          }
+                        />
+                        <div className="flex justify-end text-xs text-muted-foreground mt-1">
+                          {typeof maxLength === "number" ? (
+                            <span>{`${
+                              maxLength - (value as string).length
+                            } / ${maxLength} chars left`}</span>
+                          ) : (
+                            <span>{`${(value as string).length} chars`}</span>
+                          )}
+                        </div>
+                      </div>
                     )}
 
                     {q.type === "long_text" && (
-                      <textarea
-                        className="min-h-[72px] w-full rounded-md border border-border bg-card p-2 text-sm text-foreground"
-                        value={previewAnswers[q.id] || ""}
-                        onChange={(e) =>
-                          setPreviewAnswers({
-                            ...previewAnswers,
-                            [q.id]: e.target.value,
-                          })
-                        }
-                      />
+                      <div>
+                        <textarea
+                          className="min-h-[72px] w-full rounded-md border border-border bg-card p-2 text-sm text-foreground"
+                          value={previewAnswers[q.id] || ""}
+                          maxLength={q.maxLength ?? undefined}
+                          onChange={(e) =>
+                            setPreviewAnswers({
+                              ...previewAnswers,
+                              [q.id]: e.target.value,
+                            })
+                          }
+                        />
+                        <div className="flex justify-end text-xs text-muted-foreground mt-1">
+                          {typeof maxLength === "number" ? (
+                            <span>{`${
+                              maxLength - (value as string).length
+                            } / ${maxLength} chars left`}</span>
+                          ) : (
+                            <span>{`${(value as string).length} chars`}</span>
+                          )}
+                        </div>
+                      </div>
                     )}
 
                     {q.type === "numeric" && (
                       <Input
                         type="number"
                         value={previewAnswers[q.id] || ""}
+                        min={q.min ?? undefined}
+                        max={q.max ?? undefined}
                         onChange={(e) =>
                           setPreviewAnswers({
                             ...previewAnswers,
