@@ -4,7 +4,6 @@ import JobDetailPage from "./pages/JobDetailPage";
 import Navbar from "./components/ui/Navbar";
 import AssessmentBuilderPage from "./pages/AssessmentBuilderPage";
 import CandidateProfilePage from "./pages/CandidateProfilePage";
-import JobApplicantsPage from "./pages/JobApplicantsPage";
 import CandidatesKanbanPage from "./pages/CandidatesKanbanPage";
 import LandingPage from "./pages/LandingPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -31,10 +30,6 @@ function App() {
           <Route
             path="jobs/:jobId/assessment"
             element={<AssessmentBuilderPage />}
-          />
-          <Route
-            path="jobs/:jobId/applicants"
-            element={<JobApplicantsPage />}
           />
           <Route
             path="jobs/:jobId/candidates"

@@ -219,12 +219,6 @@ export default function CandidatesKanbanPage() {
                             </span>
                           </div>
                         ) : null}
-                        {/* <a
-                          href={`/candidates/${c.id}`}
-                          className="mt-2 inline-block text-xs text-[#00dac5]"
-                        >
-                          Open profile
-                        </a> */}
                         <Link
                           to={`/candidates/${c.id}`}
                           className="text-xs text-[#00dac5]"

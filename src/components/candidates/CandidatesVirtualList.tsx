@@ -9,6 +9,7 @@ import {
   type CandidateStage,
 } from "../../store/features/candidates/candidatesSlice";
 import PaginationControls from "../ui/PaginationControls";
+import { Link } from "react-router-dom";
 
 export default function CandidatesVirtualList() {
   const dispatch = useDispatch<any>();
@@ -122,12 +123,12 @@ export default function CandidatesVirtualList() {
                 <span className="px-2 py-1 rounded-md bg-[#1e1e1e] border border-[#2a2a2a] text-[#bb85fb] text-xs">
                   {c.stage}
                 </span>
-                <a
-                  href={`/candidates/${c.id}`}
+                <Link
+                  to={`/candidates/${c.id}`}
                   className="text-xs text-[#00dac5]"
                 >
                   View
-                </a>
+                </Link>
               </div>
             </div>
           ))

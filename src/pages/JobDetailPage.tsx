@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import {
@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader } from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Loader from "../components/ui/Loader";
 import PaginationControls from "@/components/ui/PaginationControls";
+import { ArrowLeft } from "lucide-react";
 
 export default function JobDetailPage() {
   const { jobId } = useParams();
@@ -84,11 +85,24 @@ export default function JobDetailPage() {
   const totalCount = pagination.totalCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / (pageSize || 1)));
 
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <h2 className="text-xl font-semibold text-[#e1e1e1]">{job.title}</h2>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+              className="inline-flex items-center justify-center rounded-md p-2 bg-[#1e1e1e] border border-[#2a2a2a] hover:bg-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-[#bb85fb]"
+            >
+              <ArrowLeft className="h-5 w-5 text-white" />
+            </button>
+            <h2 className="text-xl font-semibold text-[#e1e1e1]">
+              {job.title}
+            </h2>
+          </div>
         </CardHeader>
 
         <CardContent>
