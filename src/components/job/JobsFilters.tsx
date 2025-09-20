@@ -1,6 +1,6 @@
 import Input from "../ui/Input";
 import Select from "../ui/Select";
-import TagGroupPicker from "../TagPicker";
+import TagGroupPicker from "./TagPicker";
 
 type Filters = {
   search: string;

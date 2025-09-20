@@ -1,6 +1,6 @@
 import Modal from "../ui/Modal";
 import Input from "../ui/Input";
-import TagGroupPicker from "../TagPicker";
+import TagGroupPicker from "./TagPicker";
 import Button from "../ui/Button";
 
 type Props = {
