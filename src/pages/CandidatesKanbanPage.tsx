@@ -122,7 +122,7 @@ export default function CandidatesKanbanPage() {
   }
 
   return (
-    <div className="p-6 max-w-[1500px] mx-auto">
+    <div className="space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <h1 className="text-2xl font-semibold text-white">
           {(() => {
