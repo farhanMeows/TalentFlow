@@ -12,6 +12,7 @@ import {
 } from "../store/features/candidates/candidatesSlice";
 import CandidatesVirtualList from "../components/candidates/CandidatesVirtualList";
 import PaginationControls from "@/components/ui/PaginationControls";
+import { fetchJobs } from "@/store/features/jobs/jobsSlice";
 
 const STAGES: CandidateStage[] = [
   "applied",
@@ -43,6 +44,7 @@ export default function CandidatesKanbanPage() {
 
   // fetch whenever search, job filter or pagination changes
   useEffect(() => {
+    dispatch(fetchJobs());
     dispatch(fetchCandidates());
   }, [
     filters.search,
