@@ -1,0 +1,35 @@
+<!-- favicon-small-t.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+  <defs>
+    <linearGradient id="grad" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#5B4BFF"/>
+      <stop offset="1" stop-color="#BB85FB"/>
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- background rounded square -->
+  <rect x="0" y="0" width="64" height="64" rx="12" fill="#0f0f12"/>
+
+  <!-- inner gradient panel -->
+  <rect x="6" y="6" width="52" height="52" rx="10" fill="url(#grad)" filter="url(#shadow)"/>
+
+  <!-- larger lowercase 't' centered -->
+  <text
+    x="50%"
+    y="50%"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial"
+    font-weight="700"
+    font-size="32"
+    fill="rgba(255,255,255,0.95)"
+  >
+    t
+  </text>
+
+  <!-- subtle overlay for depth -->
+  <rect x="6" y="6" width="52" height="52" rx="10" fill="#000" opacity="0.05"/>
+</svg>
