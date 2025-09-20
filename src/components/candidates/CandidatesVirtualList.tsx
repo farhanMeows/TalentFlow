@@ -74,12 +74,12 @@ export default function CandidatesVirtualList() {
   return (
     <div className="p-2">
       <div className="flex gap-2 mb-3">
-        <input
+        {/* <input
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
           placeholder="Search name or email..."
           className="px-3 py-2 rounded-md bg-[#1e1e1e] text-white border border-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-[#00dac5]"
-        />
+        /> */}
         <select
           value={stage}
           onChange={(e) => setStageLocal(e.target.value as any)}
