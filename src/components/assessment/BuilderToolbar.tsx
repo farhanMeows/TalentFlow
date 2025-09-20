@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react"; // back icon
-import Button from "../ui/Button"; // adjust import if needed
+import { ArrowLeft } from "lucide-react";
+import Button from "../ui/Button";
 
 export default function Header({
   title,
