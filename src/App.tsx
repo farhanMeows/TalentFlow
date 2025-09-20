@@ -1,7 +1,7 @@
 import { Routes, Route, Outlet } from "react-router-dom";
 import JobsPage from "./pages/JobsPage";
 import JobDetailPage from "./pages/JobDetailPage";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/ui/Navbar";
 import AssessmentBuilderPage from "./pages/AssessmentBuilderPage";
 import CandidateProfilePage from "./pages/CandidateProfilePage";
 import JobApplicantsPage from "./pages/JobApplicantsPage";
