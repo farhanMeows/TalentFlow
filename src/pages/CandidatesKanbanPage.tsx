@@ -33,6 +33,7 @@ export default function CandidatesKanbanPage() {
   const [localSearch, setLocalSearch] = useState(filters.search);
   const { jobId } = useParams();
 
+  // debounce local search -> push to store
   useEffect(() => {
     const t = setTimeout(() => {
       if (localSearch !== filters.search) dispatch(setSearch(localSearch));
@@ -40,16 +41,26 @@ export default function CandidatesKanbanPage() {
     return () => clearTimeout(t);
   }, [localSearch, filters.search, dispatch]);
 
+  // fetch whenever search, job filter or pagination changes
   useEffect(() => {
     dispatch(fetchCandidates());
-  }, [filters.search, pagination?.page, pagination?.pageSize, dispatch]);
+  }, [
+    filters.search,
+    filters.jobId,
+    pagination?.page,
+    pagination?.pageSize,
+    dispatch,
+  ]);
 
+  // keep job filter in sync with route param (if present)
   useEffect(() => {
     if (!jobId) {
       dispatch(setJobFilter(undefined));
     } else {
       dispatch(setJobFilter(Number(jobId)));
+      dispatch(setPage(1)); // reset paging when route param sets job filter
     }
+    // don't include dispatch in dep array to avoid re-running unnecessarily
   }, [jobId, dispatch]);
 
   const byStage = useMemo(() => {
@@ -97,6 +108,17 @@ export default function CandidatesKanbanPage() {
   const totalCount = pagination?.totalCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / (pageSize || 1)));
 
+  // Handler for job filter select
+  function handleJobFilterChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const val = e.target.value;
+    if (!val) {
+      dispatch(setJobFilter(undefined));
+    } else {
+      dispatch(setJobFilter(Number(val)));
+    }
+    dispatch(setPage(1)); // reset page when filter changes
+  }
+
   return (
     <div className="p-6 max-w-[1500px] mx-auto">
       <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -119,6 +141,22 @@ export default function CandidatesKanbanPage() {
             placeholder="Search candidates..."
             className="px-3 py-2 rounded-md bg-[#1e1e1e] text-white border border-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-[#00dac5]"
           />
+
+          {/* Job filter select */}
+          <select
+            value={filters.jobId ?? ""}
+            onChange={handleJobFilterChange}
+            className="px-3 py-2 rounded-md bg-[#1e1e1e] text-white border border-[#2a2a2a] focus:outline-none"
+            aria-label="Filter by job"
+          >
+            <option value="">All jobs</option>
+            {jobs.map((j: any) => (
+              <option key={j.id} value={j.id}>
+                {j.title}
+              </option>
+            ))}
+          </select>
+
           <button
             onClick={() => setShowAll((v) => !v)}
             className="px-3 py-2 rounded-md bg-[#1e1e1e] text-white border border-[#2a2a2a] hover:bg-[#181818]"
