@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import {
   addTimelineNote,
   fetchTimeline,
@@ -11,6 +12,7 @@ const EMPTY_EVENTS: any[] = [];
 
 export default function CandidateProfilePage() {
   const params = useParams();
+  const navigate = useNavigate();
   const id = Number(params.id);
   const dispatch = useDispatch<any>();
   const candidate = useSelector((s: any) =>
@@ -94,12 +96,37 @@ export default function CandidateProfilePage() {
     });
   }
 
+  function goBack() {
+    try {
+      // history length > 1 usually means there is something to go back to
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate("/candidates");
+      }
+    } catch {
+      navigate("/candidates");
+    }
+  }
+
   if (!candidate) return <div className="p-6 text-white">Loading...</div>;
 
   return (
     <div className="p-6 max-w-5xl mx-auto text-white">
-      <h1 className="text-2xl font-semibold">{candidate.name}</h1>
-      <p className="text-[#e1e1e1]">{candidate.email}</p>
+      <div className="flex items-center gap-3 mb-4">
+        <button
+          onClick={goBack}
+          aria-label="Go back"
+          className="inline-flex items-center justify-center rounded-md p-2 bg-[#1e1e1e] border border-[#2a2a2a] hover:bg-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-[#bb85fb]"
+        >
+          <ArrowLeft className="h-5 w-5 text-white" />
+        </button>
+
+        <div>
+          <h1 className="text-2xl font-semibold">{candidate.name}</h1>
+          <p className="text-sm text-[#e1e1e1]">{candidate.email}</p>
+        </div>
+      </div>
       <div className="mt-2">
         <span className="px-2 py-1 rounded bg-[#1e1e1e] border border-[#2a2a2a] text-[#bb85fb]">
           {candidate.stage}
