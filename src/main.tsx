@@ -12,6 +12,7 @@ import { BrowserRouter } from "react-router-dom";
 
 async function bootstrap() {
   // Start MSW and seed DB
+  await seedDatabase(); // Seeds both jobs and assessments
   const worker = setupWorker(...handlers);
   await worker.start({
     serviceWorker: {
@@ -20,7 +21,6 @@ async function bootstrap() {
     onUnhandledRequest: "bypass",
   });
   // await clearAllData(); // Clear database before seeding
-  await seedDatabase(); // Seeds both jobs and assessments
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
