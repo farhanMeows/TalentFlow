@@ -136,35 +136,41 @@ export default function CandidatesKanbanPage() {
               : "Candidates – All candidates";
           })()}
         </h1>
-        <div className="flex items-center gap-2">
-          <input
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Search candidates..."
-            className="px-3 py-2 rounded-md bg-[#1e1e1e] text-white border border-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-[#00dac5]"
-          />
+        <div className="w-full">
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <div className="w-full md:w-auto flex-1">
+              <input
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
+                placeholder="Search candidates..."
+                className="w-full px-3 py-2 rounded-md bg-[#1e1e1e] text-white border border-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-[#00dac5]"
+              />
+            </div>
 
-          {/* Job filter select */}
-          <select
-            value={filters.jobId ?? ""}
-            onChange={handleJobFilterChange}
-            className="px-3 py-2 rounded-md bg-[#1e1e1e] text-white border border-[#2a2a2a] focus:outline-none"
-            aria-label="Filter by job"
-          >
-            <option value="">All jobs</option>
-            {jobs.map((j: any) => (
-              <option key={j.id} value={j.id}>
-                {j.title}
-              </option>
-            ))}
-          </select>
+            <div className="flex w-full md:w-auto gap-2 md:items-center md:justify-end flex-col sm:flex-row">
+              <select
+                value={filters.jobId ?? ""}
+                onChange={handleJobFilterChange}
+                className="w-full sm:w-auto px-3 py-2 rounded-md bg-[#1e1e1e] text-white border border-[#2a2a2a] focus:outline-none"
+                aria-label="Filter by job"
+              >
+                <option value="">All jobs</option>
+                {jobs.map((j: any) => (
+                  <option key={j.id} value={j.id}>
+                    {j.title}
+                  </option>
+                ))}
+              </select>
 
-          <button
-            onClick={() => setShowAll((v) => !v)}
-            className="px-3 py-2 rounded-md bg-[#1e1e1e] text-white border border-[#2a2a2a] hover:bg-[#181818]"
-          >
-            {showAll ? "Show Kanban" : "Show All (Virtualized)"}
-          </button>
+              <button
+                onClick={() => setShowAll((v) => !v)}
+                className="w-full sm:w-auto px-3 py-2 rounded-md bg-[#1e1e1e] text-white border border-[#2a2a2a] hover:bg-[#181818]"
+                aria-pressed={showAll}
+              >
+                {showAll ? "Show Kanban" : "Show All (Virtualized)"}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
