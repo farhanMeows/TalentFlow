@@ -15,14 +15,13 @@ import {
   reorderJobs,
 } from "../store/features/jobs/jobsSlice";
 
-import { Link } from "react-router-dom";
-import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
-import Select from "../components/ui/Select";
-import { Card } from "../components/ui/Card";
-import Modal from "../components/ui/Modal";
-import TagGroupPicker from "../components/TagPicker";
 import { PREDEFINED_TAGS } from "../constants/tags";
+import JobsHeader from "@/components/job/JobsHeader";
+import JobsFilters from "@/components/job/JobsFilters";
+import JobsList from "@/components/job/JobsList";
+import PaginationControls from "@/components/ui/PaginationControls";
+import JobFormModal from "@/components/job/JobFormModal";
+import ConfirmDeleteModal from "@/components/job/ConfirmDeleteModal";
 
 export default function JobsPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -63,7 +62,7 @@ export default function JobsPage() {
   }
 
   function openEditModal(jobId: number) {
-    const job = jobs.find((j) => j.id === jobId);
+    const job = jobs.find((j: any) => j.id === jobId);
     if (!job) return;
     setEditingJobId(jobId);
     setTitle(job.title);
@@ -132,267 +131,78 @@ export default function JobsPage() {
 
   return (
     <div className="space-y-6 text-[#e1e1e1]">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-white">Jobs</h1>
-        <Button
-          className="shadow-md shadow-[#bb85fb]/20"
-          onClick={openCreateModal}
-        >
-          New Job
-        </Button>
-      </div>
+      <JobsHeader onCreate={openCreateModal} />
 
-      <div className="mb-6 flex flex-col gap-3 rounded-lg bg-[#1e1e1e] p-4 shadow-sm border border-[rgba(255,255,255,0.02)]">
-        <Input
-          value={filters.search}
-          onChange={(e) => dispatch(setSearchFilter(e.target.value))}
-          placeholder="Search title"
-          aria-label="Search title"
-          className="bg-[#121212] text-[#e1e1e1] placeholder-[#a0a0a0] border-[rgba(255,255,255,0.03)]"
-        />
-        <div className="flex flex-wrap items-center gap-3">
-          <Select
-            value={filters.status}
-            onChange={(e) => dispatch(setStatusFilter(e.target.value as any))}
-            aria-label="Status filter"
-            className="bg-[#121212] text-[#e1e1e1] border-[rgba(255,255,255,0.03)] w-44"
-          >
-            <option value="">All statuses</option>
-            <option value="active">Active</option>
-            <option value="archived">Archived</option>
-          </Select>
-
-          <div className="text-sm text-[#a0a0a0]">Filter by tags:</div>
-
-          <div className="w-full md:w-auto">
-            <TagGroupPicker
-              groups={PREDEFINED_TAGS}
-              selected={filters.tags}
-              onChange={(tags) => dispatch(setTagsFilter(tags))}
-              size="sm"
-            />
-          </div>
-        </div>
-      </div>
+      <JobsFilters
+        filters={filters}
+        onSearchChange={(v) => dispatch(setSearchFilter(v))}
+        onStatusChange={(v) => dispatch(setStatusFilter(v as any))}
+        onTagsChange={(tags) => dispatch(setTagsFilter(tags))}
+        tagGroups={Object.fromEntries(
+          Object.entries(PREDEFINED_TAGS).map(([k, v]) => [k, [...v]])
+        )}
+      />
 
       {status === "loading" && (
         <p className="text-sm text-[#a0a0a0]">Loading...</p>
       )}
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
-      <div className="grid gap-3">
-        {jobs.map((job, idx) => (
-          <Card
-            key={job.id}
-            draggable
-            onDragStart={(e: React.DragEvent<HTMLDivElement>) =>
-              onDragStart(e, idx)
-            }
-            onDragOver={(e: React.DragEvent<HTMLDivElement>) => onDragOver(e)}
-            onDrop={(e: React.DragEvent<HTMLDivElement>) => onDrop(e, idx)}
-            className="flex items-center justify-between gap-3 bg-[#1e1e1e] text-[#e1e1e1] hover:shadow-lg transition-shadow"
-          >
-            <div className="flex flex-col">
-              <Link
-                to={`/jobs/${job.id}`}
-                className="text-base font-semibold text-white hover:text-[#bb85fb] transition-colors"
-              >
-                {job.title}
-              </Link>
+      <JobsList
+        jobs={jobs}
+        onEdit={openEditModal}
+        onToggleArchive={toggleArchive}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+      />
 
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#a0a0a0]">
-                <span className="rounded bg-[#121212] px-2 py-0.5">
-                  slug: {job.slug}
-                </span>
+      <PaginationControls
+        page={pagination.page}
+        totalPages={totalPages}
+        pageSize={pagination.pageSize}
+        totalCount={pagination.totalCount}
+        onPrev={() => dispatch(setPage(Math.max(1, pagination.page - 1)))}
+        onNext={() =>
+          dispatch(setPage(Math.min(totalPages, pagination.page + 1)))
+        }
+        onPageSizeChange={(n) => dispatch(setPageSize(n))}
+      />
 
-                <span
-                  className={
-                    "rounded px-2 py-0.5 text-xs font-semibold " +
-                    (job.status === "active"
-                      ? "bg-[#00dac5]/20 text-[#00dac5]"
-                      : "bg-[rgba(255,255,255,0.02)] text-[#a0a0a0]")
-                  }
-                >
-                  {job.status}
-                </span>
-
-                {job.tags.map((t) => (
-                  <span
-                    key={t}
-                    className="rounded px-2 py-0.5 text-xs font-semibold bg-[#bb85fb]/12 text-[#bb85fb]"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="secondary"
-                className="border-[rgba(255,255,255,0.03)] bg-[#121212] text-[#e1e1e1] hover:bg-[#151515]"
-                onClick={() => openEditModal(job.id!)}
-              >
-                Edit
-              </Button>
-
-              <Button
-                variant="primary"
-                className="bg-[#bb85fb] hover:bg-[#a46df0]"
-                onClick={() => toggleArchive(job.id!, job.status)}
-              >
-                {job.status === "active" ? "Archive" : "Unarchive"}
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="border-[rgba(255,255,255,0.03)] bg-[#121212] text-[#e1e1e1] hover:bg-[#151515]"
-                asChild
-              >
-                <Link to={`/jobs/${job.id}/assessment`}>Assessment</Link>
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-        <Button
-          variant="secondary"
-          className="border-[rgba(255,255,255,0.03)] bg-[#121212] text-[#e1e1e1] hover:bg-[#151515]"
-          onClick={() => dispatch(setPage(Math.max(1, pagination.page - 1)))}
-          disabled={pagination.page === 1}
-        >
-          Prev
-        </Button>
-
-        <span className="text-sm text-[#a0a0a0]">
-          Page {pagination.page} / {totalPages}
-        </span>
-
-        <Button
-          variant="secondary"
-          className="border-[rgba(255,255,255,0.03)] bg-[#121212] text-[#e1e1e1] hover:bg-[#151515]"
-          onClick={() =>
-            dispatch(setPage(Math.min(totalPages, pagination.page + 1)))
-          }
-          disabled={pagination.page >= totalPages}
-        >
-          Next
-        </Button>
-
-        <Select
-          value={pagination.pageSize}
-          onChange={(e) => dispatch(setPageSize(Number(e.target.value)))}
-          className="w-28 border-[rgba(255,255,255,0.03)] bg-[#121212] text-[#e1e1e1]"
-        >
-          {[5, 10, 20].map((n) => (
-            <option key={n} value={n}>
-              {n} / page
-            </option>
-          ))}
-        </Select>
-
-        <span className="text-sm text-[#a0a0a0]">
-          total: {pagination.totalCount}
-        </span>
-      </div>
-
-      {/* Create / Edit Modal */}
-      <Modal
+      <JobFormModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingJobId == null ? "Create Job" : "Edit Job"}
-      >
-        <div className="flex flex-col gap-3">
-          <label className="text-sm font-medium text-[#a0a0a0]">
-            Title
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-          </label>
+        editingJobId={editingJobId}
+        titleValue={title}
+        setTitleValue={setTitle}
+        slugValue={slug}
+        setSlugValue={setSlug}
+        tagsInput={tagsInput}
+        setTagsInput={setTagsInput}
+        onSubmit={submitForm}
+        formError={formError}
+        onDeleteClick={
+          editingJobId != null
+            ? () => setConfirmDeleteId(editingJobId)
+            : undefined
+        }
+        tagGroups={Object.fromEntries(
+          Object.entries(PREDEFINED_TAGS).map(([k, v]) => [k, [...v]])
+        )}
+      />
 
-          <label className="text-sm font-medium text-[#a0a0a0]">
-            Slug
-            <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
-          </label>
-
-          <div className="text-sm font-medium text-[#a0a0a0]">Tags</div>
-
-          <TagGroupPicker
-            groups={PREDEFINED_TAGS}
-            selected={tagsInput
-              .split(",")
-              .map((t) => t.trim())
-              .filter(Boolean)}
-            onChange={(tags) => setTagsInput(tags.join(", "))}
-          />
-
-          {formError && <p className="text-sm text-rose-400">{formError}</p>}
-
-          <div className="mt-2 flex justify-between gap-3">
-            {editingJobId != null && (
-              <Button
-                variant="danger"
-                className="bg-rose-600 hover:bg-rose-700"
-                onClick={() => setConfirmDeleteId(editingJobId)}
-              >
-                Delete Job
-              </Button>
-            )}
-
-            <div className="ml-auto flex gap-3">
-              <Button
-                variant="secondary"
-                className="border-[rgba(255,255,255,0.03)] bg-[#121212] text-[#e1e1e1] hover:bg-[#151515]"
-                onClick={() => setModalOpen(false)}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                className="bg-[#bb85fb] hover:bg-[#a46df0]"
-                onClick={submitForm}
-              >
-                Save
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Confirm Delete Modal */}
-      <Modal
+      <ConfirmDeleteModal
         open={confirmDeleteId != null}
         onClose={() => setConfirmDeleteId(null)}
-        title="Confirm delete"
-      >
-        <p className="text-sm text-[#e1e1e1]">This action cannot be undone.</p>
-
-        <div className="mt-4 flex justify-end gap-3">
-          <Button
-            variant="secondary"
-            className="border-[rgba(255,255,255,0.03)] bg-[#121212] text-[#e1e1e1] hover:bg-[#151515]"
-            onClick={() => setConfirmDeleteId(null)}
-          >
-            Cancel
-          </Button>
-
-          <Button
-            variant="danger"
-            className="bg-rose-600 hover:bg-rose-700"
-            onClick={async () => {
-              if (confirmDeleteId != null) {
-                await dispatch(deleteJob(confirmDeleteId));
-                setConfirmDeleteId(null);
-                setModalOpen(false);
-                dispatch(fetchJobs());
-              }
-            }}
-          >
-            Delete
-          </Button>
-        </div>
-      </Modal>
+        onConfirm={async () => {
+          if (confirmDeleteId != null) {
+            await dispatch(deleteJob(confirmDeleteId));
+            setConfirmDeleteId(null);
+            setModalOpen(false);
+            dispatch(fetchJobs());
+          }
+        }}
+      />
     </div>
   );
 }
