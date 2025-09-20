@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import {
   addTimelineNote,
@@ -197,12 +197,12 @@ export default function CandidateProfilePage() {
             Add Note
           </button>
           {candidate.jobId ? (
-            <a
-              href={`/jobs/${candidate.jobId}/assessment`}
+            <Link
+              to={`/jobs/${candidate.jobId}/assessment`}
               className="mt-4 inline-block px-3 py-2 rounded bg-[#1e1e1e] border border-[#2a2a2a] text-white"
             >
               Assessment Builder
-            </a>
+            </Link>
           ) : null}
         </div>
       </div>

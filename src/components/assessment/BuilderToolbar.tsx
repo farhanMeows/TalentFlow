@@ -1,26 +1,35 @@
-import Button from "../ui/Button"; // adjust this import to match your project
-// alternative: import { Button } from "your-ui-lib";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react"; // back icon
+import Button from "../ui/Button"; // adjust import if needed
 
-export type ViewMode = "builder" | "preview";
-
-type Props = {
-  title?: string;
-  viewMode: ViewMode;
-  setViewMode: (m: ViewMode) => void;
-  onSave: () => void;
-  className?: string;
-};
-
-export default function BuilderToolbar({
-  title = "Assessment Builder",
+export default function Header({
+  title,
   viewMode,
   setViewMode,
   onSave,
   className = "",
-}: Props) {
+}: {
+  title: string;
+  viewMode: "builder" | "preview";
+  setViewMode: (mode: "builder" | "preview") => void;
+  onSave: () => void;
+  className?: string;
+}) {
+  const navigate = useNavigate();
+
   return (
     <div className={`flex items-center justify-between ${className}`}>
-      <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => navigate(-1)}
+          aria-label="Go back"
+          className="inline-flex items-center justify-center rounded-md p-2 bg-[#1e1e1e] border border-[#2a2a2a] hover:bg-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-[#bb85fb]"
+        >
+          <ArrowLeft className="h-5 w-5 text-white" />
+        </button>
+
+        <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
+      </div>
 
       <div className="flex items-center gap-3">
         <div className="flex rounded-lg bg-[#1e1e1e] p-1">
