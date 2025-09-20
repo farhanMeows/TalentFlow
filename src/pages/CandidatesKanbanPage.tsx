@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   fetchCandidates,
   setSearch,
@@ -219,12 +219,18 @@ export default function CandidatesKanbanPage() {
                             </span>
                           </div>
                         ) : null}
-                        <a
+                        {/* <a
                           href={`/candidates/${c.id}`}
                           className="mt-2 inline-block text-xs text-[#00dac5]"
                         >
                           Open profile
-                        </a>
+                        </a> */}
+                        <Link
+                          to={`/candidates/${c.id}`}
+                          className="text-xs text-[#00dac5]"
+                        >
+                          Open profile
+                        </Link>
                       </div>
                     ))
                   )}
