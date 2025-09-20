@@ -37,7 +37,7 @@ export default function JobCard({
       onDragStart={(e) => onDragStart(e, index)}
       onDragOver={(e) => onDragOver(e)}
       onDrop={(e) => onDrop(e, index)}
-      className="flex items-center justify-between gap-3 bg-[#1e1e1e] text-[#e1e1e1] hover:shadow-lg transition-shadow"
+      className="flex items-center justify-between gap-3 cursor-grab active:cursor-grabbing bg-[#1e1e1e] text-[#e1e1e1] hover:shadow-lg transition-shadow"
     >
       <div className="flex flex-col">
         <Link

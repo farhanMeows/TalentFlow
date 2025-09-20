@@ -27,6 +27,17 @@ npm run dev
 
 App boots MSW, seeds IndexedDB, and opens at `http://localhost:5173/`.
 
+# Architecture
+
+- **Frontend-only app** with no backend
+- **MSW** intercepts `fetch` calls and returns mock API responses
+- **Dexie (IndexedDB)** used as a persistent local DB
+- **Redux Toolkit slices**:
+  - `jobsSlice` → CRUD + pagination + DnD reorder
+  - `candidatesSlice` → filtering, pagination, kanban, profiles
+  - `assessmentsSlice` → builder + preview
+- **Optimistic UI**: reorder, stage transitions update immediately; roll back on failure
+
 ## Project Structure (high-level)
 
 - `src/pages/LandingPage.tsx` – marketing/intro page (no navbar, full-width)
@@ -60,11 +71,6 @@ App boots MSW, seeds IndexedDB, and opens at `http://localhost:5173/`.
   - Candidate profile with timeline (stage changes, notes), @mention suggestions (local list)
   - Routes: `/candidates`, `/candidates/:id`, `/jobs/:jobId/candidates`
 
-## Theming
-
-- Global dark theme via Tailwind tokens
-- Accent gradient logo & CTAs with `#bb85fb` and `#00dac5`
-
 ## Mock API (MSW)
 
 - Jobs
@@ -85,10 +91,19 @@ App boots MSW, seeds IndexedDB, and opens at `http://localhost:5173/`.
   - `GET /candidates/:id/timeline` (events)
   - `POST /candidates/:id/timeline` (add note)
 
-### Artificial Latency & Failure Injection
+# Technical Decisions
 
-- All write endpoints include randomized latency: 200–1200ms
-- Error rate ~5–10% (random) on write endpoints to test optimistic UI & error handling
+- **MSW over JSON-server**: chose MSW for in-browser mocks + ability to inject latency/errors.
+- **Dexie**: chosen for IndexedDB abstraction, makes seeding + queries ergonomic.
+- **Redux Toolkit**: centralized state, easier optimistic updates/rollbacks.
+- **React Router**: for deep linking across jobs, candidates, assessments.
+
+## UI/UX
+
+- **Dark theme** with purple/teal accents → modern/futuristic feel.
+- **Optimistic UI with rollback** simulates real-world async interactions.
+- **Error injection**: 5–10% random failures on write endpoints → used to validate error handling.
+- **Virtualized candidate list**: ensures performance with 1000+ records.
 
 ## Seeding & Data
 
@@ -103,7 +118,7 @@ To clear data (optional utility): see `clearAllData()` in `src/main.tsx` (commen
 
 - `/` → Landing page (no navbar)
 - App layout (with navbar + constrained content):
-  - `/jobs`, `/jobs/:jobId`, `/jobs/:jobId/assessment`, `/jobs/:jobId/applicants`, `/jobs/:jobId/candidates`
+  - `/jobs`, `/jobs/:jobId`, `/jobs/:jobId/assessment`, `/jobs/:jobId/candidates`
   - `/candidates`, `/candidates/:id`
 
 ## Dev Notes
