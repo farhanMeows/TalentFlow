@@ -191,18 +191,15 @@ export default function SectionEditorPanel({
               </span>
               <Button
                 type="button"
-                variant="ghost"
+                variant={q.visibleIf ? "danger" : "secondary"}
                 size="sm"
+                className="px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
                 onClick={() => {
                   const currentVisibleIf = q.visibleIf;
                   updateQuestion(selectedSection!, q.id, {
                     visibleIf: currentVisibleIf
                       ? undefined
-                      : {
-                          questionId: "",
-                          operator: "eq",
-                          value: "",
-                        },
+                      : { questionId: "", operator: "eq", value: "" },
                   });
                 }}
               >
