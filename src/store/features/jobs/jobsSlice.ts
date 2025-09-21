@@ -216,11 +216,10 @@ const jobsSlice = createSlice({
     });
 
     builder.addCase(reorderJobs.rejected, (state, action) => {
-      // ROLLBACK! If the API call failed, we need to revert the optimistic update.
-      // A simple way is to just refetch the list from the "server" to get the true order.
+      // The component handles the rollback by dispatching optimisticallyReorderJobs again
+      // We just need to set the error state here
       state.status = "failed";
       state.error = action.payload as string;
-      // You would dispatch `fetchJobs()` from your component to reset the state.
     });
   },
 });
