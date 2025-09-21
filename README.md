@@ -2,6 +2,10 @@
 
 TALENTFLOW is a local-first, HR-centric hiring platform with a modern dark UI. It uses Mock Service Worker (MSW) to simulate a backend and Dexie (IndexedDB) for persistence.
 
+## Live Demo
+
+Check out the live version here: [https://talent-flow-mauve.vercel.app/](https://talent-flow-mauve.vercel.app/)
+
 ## Tech Stack
 
 - Vite + React + TypeScript
