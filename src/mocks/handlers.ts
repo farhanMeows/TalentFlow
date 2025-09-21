@@ -159,7 +159,8 @@ export const handlers = [
     // Sanity: ensure fromOrder matches current job order; if not, still proceed
     const movedJob = allJobs.splice(idx, 1)[0];
     // Find target index by toOrder among remaining list
-    let targetIndex = allJobs.findIndex((j) => j.order === toOrder);
+    // let targetIndex = allJobs.findIndex((j) => j.order === toOrder);
+    let targetIndex = toOrder;
     if (targetIndex === -1) targetIndex = allJobs.length; // move to end if not found
     allJobs.splice(targetIndex, 0, movedJob);
 
