@@ -18,8 +18,11 @@ export default function Header({
   const navigate = useNavigate();
 
   return (
-    <div className={`flex items-center justify-between ${className}`}>
-      <div className="flex items-center gap-3">
+    <div
+      className={`flex flex-col md:flex-row md:items-center justify-between gap-3 ${className}`}
+    >
+      {/* Left: back + title */}
+      <div className="flex w-full md:w-auto items-center gap-3">
         <button
           onClick={() => navigate(-1)}
           aria-label="Go back"
@@ -28,14 +31,18 @@ export default function Header({
           <ArrowLeft className="h-5 w-5 text-white" />
         </button>
 
-        <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
+        <h2 className="truncate text-lg md:text-2xl font-semibold text-foreground">
+          {title}
+        </h2>
       </div>
 
-      <div className="flex items-center gap-3">
+      {/* Right: controls (stack on mobile, inline on md+) */}
+      <div className="flex w-full md:w-auto items-center justify-end gap-3">
+        {/* segmented Builder / Preview */}
         <div className="flex rounded-lg bg-[#1e1e1e] p-1">
           <button
             onClick={() => setViewMode("builder")}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+            className={`px-2 py-1 text-xs md:px-3 md:py-1.5 md:text-sm font-medium rounded-md transition-colors ${
               viewMode === "builder"
                 ? "bg-[#bb85fb] text-white"
                 : "text-[#a0a0a0] hover:text-white"
@@ -46,7 +53,7 @@ export default function Header({
 
           <button
             onClick={() => setViewMode("preview")}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+            className={`px-2 py-1 text-xs md:px-3 md:py-1.5 md:text-sm font-medium rounded-md transition-colors ${
               viewMode === "preview"
                 ? "bg-[#bb85fb] text-white"
                 : "text-[#a0a0a0] hover:text-white"
@@ -56,7 +63,12 @@ export default function Header({
           </button>
         </div>
 
-        <Button onClick={onSave}>Save Assessment</Button>
+        {/* Save button becomes full-width on very small screens */}
+        <div className="w-full sm:w-auto md:w-auto">
+          <Button onClick={onSave} className="w-full sm:w-auto md:inline-flex">
+            Save Assessment
+          </Button>
+        </div>
       </div>
     </div>
   );
