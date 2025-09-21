@@ -37,6 +37,7 @@ export default function JobsPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
+  const [displayError, setDisplayError] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(fetchJobs());
@@ -48,6 +49,18 @@ export default function JobsPage() {
     filters.search,
     filters.tags,
   ]);
+
+  // Handle general error display with auto-hide
+  useEffect(() => {
+    if (error) {
+      setDisplayError(error);
+      const timer = setTimeout(() => {
+        setDisplayError(null);
+      }, 4000); // Hide after 4 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(pagination.totalCount / pagination.pageSize));
@@ -182,7 +195,11 @@ export default function JobsPage() {
       {status === "loading" && (
         <p className="text-sm text-[#a0a0a0]">Loading...</p>
       )}
-      {error && <p className="text-sm text-rose-400">{error}</p>}
+      {displayError && (
+        <div className="bg-rose-500/10 border border-rose-500/20 rounded-lg p-3 text-sm text-rose-400">
+          {displayError}
+        </div>
+      )}
       {reorderError && (
         <div className="bg-rose-500/10 border border-rose-500/20 rounded-lg p-3 text-sm text-rose-400">
           {reorderError}
