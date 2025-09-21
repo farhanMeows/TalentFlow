@@ -3,7 +3,6 @@ import { http, HttpResponse, delay } from "msw";
 import { db, type CandidateStage } from "../lib/db";
 
 export const handlers = [
-  // 1. Get Jobs with Pagination & Filtering [cite: 9, 29]
   http.get("/jobs", async ({ request }) => {
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "1");
@@ -49,7 +48,6 @@ export const handlers = [
     });
   }),
 
-  // 2. Create a new Job [cite: 10, 30]
   http.post("/jobs", async ({ request }) => {
     // 5–10% error rate
     if (Math.random() < 0.08) {
@@ -88,7 +86,7 @@ export const handlers = [
     return HttpResponse.json({ ...newJob, id }, { status: 201 });
   }),
 
-  // 3. Update a Job (for editing or archiving) [cite: 11, 31]
+  // 3. Update a Job (for editing or archiving)
   http.patch("/jobs/:id", async ({ request, params }) => {
     if (Math.random() < 0.08) {
       await delay(300);
@@ -131,7 +129,7 @@ export const handlers = [
     return HttpResponse.json({ success: true });
   }),
 
-  // 4. Reorder Jobs [cite: 11, 32]
+  // 4. Reorder Jobs
   http.patch("/jobs/:id/reorder", async ({ request, params }) => {
     // Simulate a failure 10% of the time to test rollback
     if (Math.random() < 0.1) {

@@ -10,6 +10,8 @@ type Props = {
   onDragStart: (e: React.DragEvent<HTMLDivElement>, idx: number) => void;
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>, toIndex: number) => void;
+  currentPage: number;
+  pageSize: number;
 };
 
 export default function JobsList({
@@ -19,21 +21,34 @@ export default function JobsList({
   onDragStart,
   onDragOver,
   onDrop,
+  currentPage,
+  pageSize,
 }: Props) {
   return (
     <div className="grid gap-3">
-      {jobs.map((job: any, idx: number) => (
-        <JobCard
-          key={job.id}
-          job={job}
-          index={idx}
-          onEdit={onEdit}
-          onToggleArchive={onToggleArchive}
-          onDragStart={onDragStart}
-          onDragOver={onDragOver}
-          onDrop={onDrop}
-        />
-      ))}
+      {jobs && jobs.length > 0 ? (
+        jobs.map((job: any, idx: number) => {
+          if (!job || !job.id) {
+            return null;
+          }
+
+          const globalIndex = (currentPage - 1) * pageSize + idx;
+          return (
+            <JobCard
+              key={job.id}
+              job={job}
+              index={globalIndex}
+              onEdit={onEdit}
+              onToggleArchive={onToggleArchive}
+              onDragStart={onDragStart}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+            />
+          );
+        })
+      ) : (
+        <div className="text-center text-[#a0a0a0] py-8">No jobs found</div>
+      )}
     </div>
   );
 }
