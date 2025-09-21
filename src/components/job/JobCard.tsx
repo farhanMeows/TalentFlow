@@ -1,7 +1,7 @@
-import React from "react";
 import { Link } from "react-router-dom";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import Button from "../ui/Button";
-import { Card } from "../ui/Card";
 
 type Job = {
   id?: number;
@@ -13,31 +13,33 @@ type Job = {
 
 type Props = {
   job: Job;
-  index: number;
   onEdit: (jobId: number) => void;
   onToggleArchive: (jobId: number, current: "active" | "archived") => void;
-  onDragStart: (e: React.DragEvent<HTMLDivElement>, idx: number) => void;
-  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDrop: (e: React.DragEvent<HTMLDivElement>, toIndex: number) => void;
 };
 
-export default function JobCard({
-  job,
-  index,
-  onEdit,
-  onToggleArchive,
-  onDragStart,
-  onDragOver,
-  onDrop,
-}: Props) {
+export default function JobCard({ job, onEdit, onToggleArchive }: Props) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: job.id! });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
   return (
-    <Card
-      key={job.id}
-      draggable
-      onDragStart={(e) => onDragStart(e, index)}
-      onDragOver={(e) => onDragOver(e)}
-      onDrop={(e) => onDrop(e, index)}
-      className="flex items-center justify-between gap-3 cursor-grab active:cursor-grabbing bg-[#1e1e1e] text-[#e1e1e1] hover:shadow-lg transition-shadow"
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`rounded-xl border p-4 shadow-[0_8px_24px_rgba(0,0,0,0.6)] bg-[#1e1e1e] border-[rgba(255,255,255,0.04)] flex items-center justify-between gap-3 cursor-grab active:cursor-grabbing text-[#e1e1e1] hover:shadow-lg transition-shadow ${
+        isDragging ? "opacity-50" : ""
+      }`}
     >
       <div className="flex flex-col">
         <Link
@@ -99,6 +101,6 @@ export default function JobCard({
           <Link to={`/jobs/${job.id}/assessment`}>Assessment</Link>
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }
