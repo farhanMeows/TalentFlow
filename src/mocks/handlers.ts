@@ -300,7 +300,7 @@ export const handlers = [
   // PATCH /candidates/:id (stage transitions or partial updates)
   http.patch("/candidates/:id", async ({ params, request }) => {
     // simulate occasional failure to test optimistic rollback
-    if (Math.random() < 0.1) {
+    if (Math.random() < 0.08) {
       await delay(200 + Math.random() * 1000);
       return new HttpResponse("Random failure", { status: 500 });
     }

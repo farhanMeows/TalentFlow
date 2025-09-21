@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import type { DragEndEvent } from "@dnd-kit/core";
 import type { RootState, AppDispatch } from "../store/store";
 import {
   fetchJobs,
@@ -125,46 +126,52 @@ export default function JobsPage() {
     dispatch(fetchJobs());
   }
 
-  function onDragStart(e: React.DragEvent<HTMLDivElement>, index: number) {
-    e.dataTransfer.setData("text/plain", String(index));
-  }
-  function onDrop(e: React.DragEvent<HTMLDivElement>, toIndex: number) {
-    const fromIndex = Number(e.dataTransfer.getData("text/plain"));
-    if (Number.isNaN(fromIndex) || fromIndex === toIndex) return;
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
 
-    const localFromIndex =
-      fromIndex - (pagination.page - 1) * pagination.pageSize;
-    const localToIndex = toIndex - (pagination.page - 1) * pagination.pageSize;
-
-    if (
-      localFromIndex < 0 ||
-      localFromIndex >= jobs.length ||
-      localToIndex < 0 ||
-      localToIndex >= jobs.length
-    ) {
+    if (!over || active.id === over.id) {
       return;
     }
 
-    const moved = jobs[localFromIndex];
+    const activeIndex = jobs.findIndex((job) => job.id === active.id);
+    const overIndex = jobs.findIndex((job) => job.id === over.id);
+
+    if (activeIndex === -1 || overIndex === -1) {
+      return;
+    }
+
+    const moved = jobs[activeIndex];
     if (!moved || !moved.id) {
-      console.error("Invalid job at index:", localFromIndex);
+      console.error("Invalid job at index:", activeIndex);
       return;
     }
+
+    // Calculate global indices
+    const globalFromIndex =
+      (pagination.page - 1) * pagination.pageSize + activeIndex;
+    const globalToIndex =
+      (pagination.page - 1) * pagination.pageSize + overIndex;
 
     dispatch(
       optimisticallyReorderJobs({
-        fromIndex: localFromIndex,
-        toIndex: localToIndex,
+        fromIndex: activeIndex,
+        toIndex: overIndex,
       })
     );
-    dispatch(reorderJobs({ jobId: moved.id, fromIndex, toIndex }))
+    dispatch(
+      reorderJobs({
+        jobId: moved.id,
+        fromIndex: globalFromIndex,
+        toIndex: globalToIndex,
+      })
+    )
       .unwrap()
       .catch((error) => {
         // Rollback the optimistic update by reversing the drag operation
         dispatch(
           optimisticallyReorderJobs({
-            fromIndex: localToIndex,
-            toIndex: localFromIndex,
+            fromIndex: overIndex,
+            toIndex: activeIndex,
           })
         );
         setReorderError("Failed to reorder jobs. Changes have been reverted.");
@@ -173,9 +180,6 @@ export default function JobsPage() {
         // Clear the error message after 3 seconds
         setTimeout(() => setReorderError(null), 3000);
       });
-  }
-  function onDragOver(e: React.DragEvent<HTMLDivElement>) {
-    e.preventDefault();
   }
 
   return (
@@ -210,11 +214,7 @@ export default function JobsPage() {
         jobs={jobs}
         onEdit={openEditModal}
         onToggleArchive={toggleArchive}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        currentPage={pagination.page}
-        pageSize={pagination.pageSize}
+        onDragEnd={handleDragEnd}
       />
 
       <PaginationControls

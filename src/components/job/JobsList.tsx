@@ -1,4 +1,17 @@
-import React from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import JobCard from "./JobCard";
 
 type Job = any;
@@ -7,48 +20,51 @@ type Props = {
   jobs: Job[];
   onEdit: (id: number) => void;
   onToggleArchive: (id: number, current: "active" | "archived") => void;
-  onDragStart: (e: React.DragEvent<HTMLDivElement>, idx: number) => void;
-  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDrop: (e: React.DragEvent<HTMLDivElement>, toIndex: number) => void;
-  currentPage: number;
-  pageSize: number;
+  onDragEnd: (event: DragEndEvent) => void;
 };
 
 export default function JobsList({
   jobs,
   onEdit,
   onToggleArchive,
-  onDragStart,
-  onDragOver,
-  onDrop,
-  currentPage,
-  pageSize,
+  onDragEnd,
 }: Props) {
-  return (
-    <div className="grid gap-3">
-      {jobs && jobs.length > 0 ? (
-        jobs.map((job: any, idx: number) => {
-          if (!job || !job.id) {
-            return null;
-          }
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-          const globalIndex = (currentPage - 1) * pageSize + idx;
-          return (
-            <JobCard
-              key={job.id}
-              job={job}
-              index={globalIndex}
-              onEdit={onEdit}
-              onToggleArchive={onToggleArchive}
-              onDragStart={onDragStart}
-              onDragOver={onDragOver}
-              onDrop={onDrop}
-            />
-          );
-        })
-      ) : (
-        <div className="text-center text-[#a0a0a0] py-8">No jobs found</div>
-      )}
-    </div>
+  const jobIds = jobs.map((job) => job.id).filter(Boolean);
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={onDragEnd}
+    >
+      <SortableContext items={jobIds} strategy={verticalListSortingStrategy}>
+        <div className="grid gap-3">
+          {jobs && jobs.length > 0 ? (
+            jobs.map((job: any) => {
+              if (!job || !job.id) {
+                return null;
+              }
+
+              return (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  onEdit={onEdit}
+                  onToggleArchive={onToggleArchive}
+                />
+              );
+            })
+          ) : (
+            <div className="text-center text-[#a0a0a0] py-8">No jobs found</div>
+          )}
+        </div>
+      </SortableContext>
+    </DndContext>
   );
 }
