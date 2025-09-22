@@ -201,12 +201,13 @@ export default function JobsPage() {
       )}
       {displayError && (
         <div className="bg-rose-500/10 border border-rose-500/20 rounded-lg p-3 text-sm text-rose-400">
-          {displayError}
-        </div>
-      )}
-      {reorderError && (
-        <div className="bg-rose-500/10 border border-rose-500/20 rounded-lg p-3 text-sm text-rose-400">
-          {reorderError}
+          {reorderError ? (
+            <div className="bg-rose-500/10 border border-rose-500/20 rounded-lg p-3 text-sm text-rose-400">
+              {reorderError}
+            </div>
+          ) : (
+            displayError
+          )}
         </div>
       )}
 
