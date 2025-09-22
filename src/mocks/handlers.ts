@@ -48,6 +48,17 @@ export const handlers = [
     });
   }),
 
+  // Get a single job by id
+  http.get("/jobs/:id", async ({ params }) => {
+    const id = Number(params.id);
+    const job = await db.jobs.get(id);
+    await delay(200);
+    if (!job) {
+      return new HttpResponse("Job not found", { status: 404 });
+    }
+    return HttpResponse.json(job);
+  }),
+
   http.post("/jobs", async ({ request }) => {
     // 5–10% error rate
     if (Math.random() < 0.08) {

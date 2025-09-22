@@ -44,6 +44,7 @@ export default function JobCard({ job, onEdit, onToggleArchive }: Props) {
       <div className="flex flex-col">
         <Link
           to={`/jobs/${job.id}`}
+          state={{ job }}
           className="text-base font-semibold text-white hover:text-[#bb85fb] transition-colors"
         >
           {job.title}

@@ -58,6 +58,21 @@ export const fetchJobs = createAsyncThunk(
   }
 );
 
+export const fetchJobById = createAsyncThunk(
+  "jobs/fetchJobById",
+  async (id: number, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/jobs/${id}`);
+      if (!response.ok) {
+        return rejectWithValue("Failed to fetch job");
+      }
+      return (await response.json()) as Job;
+    } catch (err) {
+      return rejectWithValue("Network error");
+    }
+  }
+);
+
 export const createJob = createAsyncThunk(
   "jobs/createJob",
   async (
@@ -182,6 +197,15 @@ const jobsSlice = createSlice({
     builder.addCase(fetchJobs.rejected, (state, action) => {
       state.status = "failed";
       state.error = (action.payload as string) || "Failed to fetch jobs";
+    });
+
+    builder.addCase(fetchJobById.fulfilled, (state, action) => {
+      const idx = state.jobs.findIndex((j) => j.id === action.payload.id);
+      if (idx === -1) {
+        state.jobs.push(action.payload);
+      } else {
+        state.jobs[idx] = action.payload;
+      }
     });
 
     // createJob

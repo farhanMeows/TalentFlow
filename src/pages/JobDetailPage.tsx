@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import {
@@ -9,6 +9,7 @@ import {
   setPageSize as setCandidatePageSize,
 } from "../store/features/candidates/candidatesSlice";
 import type { RootState } from "../store/store";
+import { fetchJobById } from "../store/features/jobs/jobsSlice";
 import { Card, CardContent, CardHeader } from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Loader from "../components/ui/Loader";
@@ -18,11 +19,21 @@ import { ArrowLeft } from "lucide-react";
 export default function JobDetailPage() {
   const { jobId } = useParams();
   const idNum = Number(jobId);
+  const location = useLocation() as { state?: { job?: any } };
   const dispatch = useDispatch<any>();
 
-  const job = useSelector((s: RootState) =>
+  const jobFromState = location.state?.job;
+  const jobFromStore = useSelector((s: RootState) =>
     s.jobs.jobs.find((j) => j.id === idNum)
   );
+  const job = jobFromStore || jobFromState;
+  const navigate = useNavigate();
+  // If not found in store or router state, fetch by id once
+  useEffect(() => {
+    if (!job && Number.isFinite(idNum)) {
+      dispatch(fetchJobById(idNum));
+    }
+  }, [job, idNum, dispatch]);
 
   const candidatesState = useSelector(
     (s: RootState) => s.candidates,
@@ -67,9 +78,9 @@ export default function JobDetailPage() {
       <div className="space-y-4">
         <Card>
           <CardContent>
-            <p className="text-[#e1e1e1]">Job not found in current page.</p>
+            <p className="text-[#e1e1e1]">Loading job…</p>
             <div className="mt-3">
-              <Button as-child variant="secondary" className="px-3 py-1.5">
+              <Button asChild variant="secondary" className="px-3 py-1.5">
                 <Link to="/jobs">Back to Jobs</Link>
               </Button>
             </div>
@@ -84,8 +95,6 @@ export default function JobDetailPage() {
   const pageSize = pagination.pageSize ?? 10;
   const totalCount = pagination.totalCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / (pageSize || 1)));
-
-  const navigate = useNavigate();
 
   return (
     <div className="space-y-4">
@@ -127,7 +136,7 @@ export default function JobDetailPage() {
 
           {job.tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
-              {job.tags.map((t) => (
+              {job.tags.map((t: string) => (
                 <span
                   key={t}
                   className="rounded px-2 py-0.5 text-xs font-semibold bg-[#bb85fb]/12 text-[#bb85fb]"
@@ -139,11 +148,11 @@ export default function JobDetailPage() {
           )}
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button as-child variant="primary" className="px-4 py-2">
+            <Button asChild variant="primary" className="px-4 py-2">
               <Link to="/jobs">Back to Jobs</Link>
             </Button>
 
-            <Button as-child variant="secondary" className="px-4 py-2">
+            <Button asChild variant="secondary" className="px-4 py-2">
               <Link to={`/jobs/${job.id}/assessment`}>Assessment Builder</Link>
             </Button>
           </div>
@@ -156,7 +165,7 @@ export default function JobDetailPage() {
             <h3 className="text-lg font-semibold text-[#e1e1e1]">
               Applicants {!isLoadingCandidates && `(${totalCount})`}
             </h3>
-            <Button as-child variant="secondary" className="px-3 py-1.5">
+            <Button asChild variant="secondary" className="px-3 py-1.5">
               <Link to={`/jobs/${job.id}/candidates`}>View all</Link>
             </Button>
           </div>
