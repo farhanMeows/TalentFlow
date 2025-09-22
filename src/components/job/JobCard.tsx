@@ -35,45 +35,63 @@ export default function JobCard({ job, onEdit, onToggleArchive }: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className={`rounded-xl border p-4 shadow-[0_8px_24px_rgba(0,0,0,0.6)] bg-[#1e1e1e] border-[rgba(255,255,255,0.04)] flex items-center justify-between gap-3 cursor-grab active:cursor-grabbing text-[#e1e1e1] hover:shadow-lg transition-shadow ${
+      className={`rounded-xl border p-4 shadow-[0_8px_24px_rgba(0,0,0,0.6)] bg-[#1e1e1e] border-[rgba(255,255,255,0.04)] flex items-center justify-between gap-3 text-[#e1e1e1] hover:shadow-lg transition-shadow ${
         isDragging ? "opacity-50" : ""
       }`}
     >
-      <div className="flex flex-col">
-        <Link
-          to={`/jobs/${job.id}`}
-          state={{ job }}
-          className="text-base font-semibold text-white hover:text-[#bb85fb] transition-colors"
+      <div className="flex items-start gap-3">
+        {/* Drag handle */}
+        <div
+          className="mt-1 h-6 w-6 shrink-0 rounded border border-[#2a2a2a] bg-[#121212] hover:bg-[#151515] flex items-center justify-center cursor-grab active:cursor-grabbing"
+          aria-label="Drag handle"
+          title="Drag to reorder"
+          {...attributes}
+          {...listeners}
         >
-          {job.title}
-        </Link>
+          <div className="grid grid-cols-2 gap-0.5 p-0.5">
+            <span className="block h-1 w-1 rounded-full bg-[#2a2a2a]" />
+            <span className="block h-1 w-1 rounded-full bg-[#2a2a2a]" />
+            <span className="block h-1 w-1 rounded-full bg-[#2a2a2a]" />
+            <span className="block h-1 w-1 rounded-full bg-[#2a2a2a]" />
+            <span className="block h-1 w-1 rounded-full bg-[#2a2a2a]" />
+            <span className="block h-1 w-1 rounded-full bg-[#2a2a2a]" />
+          </div>
+        </div>
 
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#a0a0a0]">
-          <span className="rounded bg-[#121212] px-2 py-0.5">
-            slug: {job.slug}
-          </span>
-
-          <span
-            className={
-              "rounded px-2 py-0.5 text-xs font-semibold " +
-              (job.status === "active"
-                ? "bg-[#00dac5]/20 text-[#00dac5]"
-                : "bg-[rgba(255,255,255,0.02)] text-[#a0a0a0]")
-            }
+        <div className="flex flex-col">
+          <Link
+            to={`/jobs/${job.id}`}
+            state={{ job }}
+            className="text-base font-semibold text-white hover:text-[#bb85fb] transition-colors"
           >
-            {job.status}
-          </span>
+            {job.title}
+          </Link>
 
-          {job.tags.map((t) => (
-            <span
-              key={t}
-              className="rounded px-2 py-0.5 text-xs font-semibold bg-[#bb85fb]/12 text-[#bb85fb]"
-            >
-              {t}
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#a0a0a0]">
+            <span className="rounded bg-[#121212] px-2 py-0.5">
+              slug: {job.slug}
             </span>
-          ))}
+
+            <span
+              className={
+                "rounded px-2 py-0.5 text-xs font-semibold " +
+                (job.status === "active"
+                  ? "bg-[#00dac5]/20 text-[#00dac5]"
+                  : "bg-[rgba(255,255,255,0.02)] text-[#a0a0a0]")
+              }
+            >
+              {job.status}
+            </span>
+
+            {job.tags.map((t) => (
+              <span
+                key={t}
+                className="rounded px-2 py-0.5 text-xs font-semibold bg-[#bb85fb]/12 text-[#bb85fb]"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 

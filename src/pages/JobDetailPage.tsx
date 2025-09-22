@@ -195,7 +195,7 @@ export default function JobDetailPage() {
                         {c.stage}
                       </span>
                       <Button
-                        as-child
+                        asChild
                         variant="ghost"
                         className="px-2 py-1 text-xs"
                       >
