@@ -1,6 +1,14 @@
 import { Link, NavLink } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import {
+  setJobFilter as setCandidatesJobFilter,
+  setSearch as setCandidatesSearch,
+  setStage as setCandidatesStage,
+  setPage as setCandidatesPage,
+} from "@/store/features/candidates/candidatesSlice";
 
 export default function Navbar() {
+  const dispatch = useDispatch<any>();
   return (
     <header className="sticky top-0 z-40 border-b border-[rgba(255,255,255,0.06)] bg-[#1e1e1e]/90 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.4)]">
       <div className="mx-auto max-w-6xl px-4">
@@ -28,6 +36,13 @@ export default function Navbar() {
             </NavLink>
             <NavLink
               to="/candidates"
+              onClick={() => {
+                // Clear filters so the page fetches all candidates
+                dispatch(setCandidatesJobFilter(undefined));
+                dispatch(setCandidatesSearch(""));
+                dispatch(setCandidatesStage("" as any));
+                dispatch(setCandidatesPage(1));
+              }}
               className={({ isActive }) =>
                 [
                   "rounded-md px-3 py-1.5 transition-colors duration-200",
